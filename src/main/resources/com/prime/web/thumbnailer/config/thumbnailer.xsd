@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns="http://www.prime.in.th/schema/prime/web/thumbnailer"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:tool="http://www.springframework.org/schema/tool"
+	xmlns:context="http://www.springframework.org/schema/context"
+	targetNamespace="http://www.prime.in.th/schema/prime/web/thumbnailer"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:element name="web-thumbnailer">
+		<xsd:complexType>
+			<xsd:attribute name="raw-image-directory" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   						Controls whether repositories get transactions enabled by default. 
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="filtered-image-directory" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   						Controls whether repositories get transactions enabled by default. 
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+</xsd:schema>
