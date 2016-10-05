@@ -58,6 +58,12 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailerUtil.class.getName()));
 		
 		
+		builder = rootBeanDefinition(EntityManagemntBeanPostProcessor.class);
+		def = builder.getRawBeanDefinition();
+		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		def.setSource(parserContext.extractSource(element));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, EntityManagemntBeanPostProcessor.class.getName()));
+		
 		return null;
 	}
 

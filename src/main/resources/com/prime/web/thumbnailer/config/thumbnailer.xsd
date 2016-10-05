@@ -8,17 +8,17 @@
 
 	<xsd:element name="web-thumbnailer">
 		<xsd:complexType>
-			<xsd:attribute name="raw-image-directory" type="xsd:string">
+			<xsd:attribute name="raw-image-directory" type="xsd:string"  use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-   						Controls whether repositories get transactions enabled by default. 
+   						Directory to store raw images.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
-			<xsd:attribute name="filtered-image-directory" type="xsd:string">
+			<xsd:attribute name="filtered-image-directory" type="xsd:string"  use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-   						Controls whether repositories get transactions enabled by default. 
+   						Directory to store processed images.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
