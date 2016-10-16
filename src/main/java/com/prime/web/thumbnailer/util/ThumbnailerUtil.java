@@ -22,8 +22,8 @@ import com.prime.web.thumbnailer.repository.ThumbnailerRepository;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 
-public class ThumbnailerUtil {
-
+public class ThumbnailerUtil 
+{
 	@Autowired
 	@Qualifier(BeanDefinitionIdentifier.RAW_IMAGE_FILE)
 	private File directory;
@@ -68,7 +68,7 @@ public class ThumbnailerUtil {
 		}
 	}
 	
-	public File download(String imageId, String filterName) 
+	public File getImageFile(String imageId, String filterName) 
 	{
 		try {
 			String imagePath = imageId.replace('/', File.separatorChar);
