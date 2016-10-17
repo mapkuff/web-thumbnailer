@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xsd:schema xmlns="http://www.prime.in.th/schema/prime/web/thumbnailer"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:tool="http://www.springframework.org/schema/tool"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:bean="http://www.springframework.org/schema/beans"
 	targetNamespace="http://www.prime.in.th/schema/prime/web/thumbnailer"
 	elementFormDefault="qualified" attributeFormDefault="unqualified">
 
+	<xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans-4.2.xsd" />
+	
 	<xsd:element name="web-thumbnailer">
 		<xsd:complexType>
-			<xsd:attribute name="raw-image-directory" type="xsd:string"  use="required">
+			<xsd:sequence maxOccurs="unbounded">
+				<xsd:element name="filters" type="bean:mapType">
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="source-image-directory" type="xsd:string"  use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
    						Directory to store raw images.
@@ -18,7 +26,14 @@
 			<xsd:attribute name="filtered-image-directory" type="xsd:string"  use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-   						Directory to store processed images.
+   						Directory to store filtered images.
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="baseUrl" type="xsd:string"  use="required">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   						BaseUrl for the incoming request. for example, if base url is '/assets/images' any incoming request start with this base url will be process with image serving filter
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>

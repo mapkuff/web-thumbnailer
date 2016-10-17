@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.prime.web.thumbnailer.bean.Metadata;
+import com.prime.web.thumbnailer.bean.MetadataSource;
 import com.prime.web.thumbnailer.bean.ThumbnailerFilter;
 import com.prime.web.thumbnailer.bean.ThumbnailerFilterSource;
 import com.prime.web.thumbnailer.config.BeanDefinitionIdentifier;
@@ -25,20 +27,10 @@ import net.coobird.thumbnailator.Thumbnails.Builder;
 public class ThumbnailerUtil 
 {
 	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.RAW_IMAGE_FILE)
-	private File directory;
-
-	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)
-	private File filteredDirectory;
-	
-	@Autowired
-	private ThumbnailerFilterSource filterSource;
-	
-	@Autowired
-	private ThumbnailerRepository repository;
+	private MetadataSource metadataSource;
 
 	public String upload(MultipartFile file) {
+		Metadata metadata = metadataSource.getMetadata();
 		try {
 			if (file.isEmpty()) {
 				throw new EmptyFileUploadException();
@@ -46,11 +38,11 @@ public class ThumbnailerUtil
 			UUID uuid = UUID.randomUUID();
 			String uuidString = uuid.toString().replace('-', Character.MIN_VALUE);
 			String imageId = uuidString + "/" + file.getName();
-			File targetDir = new File(this.directory.getAbsolutePath() + File.separator + uuidString);
+			File targetDir = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + uuidString);
 			targetDir.mkdir();
 
 			File serverFile = new File(targetDir.getAbsolutePath() + File.separator + file.getName());
-			if (false == serverFile.getAbsolutePath().startsWith(this.directory.getAbsolutePath())) {
+			if (false == serverFile.getAbsolutePath().startsWith(metadata.getSourceDirectory().getAbsolutePath())) {
 				throw new RuntimeException("Malform imageId");
 			}
 
@@ -58,7 +50,7 @@ public class ThumbnailerUtil
 			Image image = new Image();
 			image.setData(data);
 			image.setId(imageId);
-			this.repository.save(image);
+			metadata.getRepository().save(image);
 
 			FileUtils.writeByteArrayToFile(serverFile, data);
 
@@ -70,25 +62,26 @@ public class ThumbnailerUtil
 	
 	public File getImageFile(String imageId, String filterName) 
 	{
+		Metadata metadata = this.metadataSource.getMetadata();
 		try {
 			String imagePath = imageId.replace('/', File.separatorChar);
-			File targetFile = new File(this.directory.getAbsolutePath() + File.separator + imagePath );
+			File targetFile = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + imagePath );
 			if (false == targetFile.exists()) {
-				Image image = this.repository.findImageByImageId(imageId);
+				Image image = metadata.getRepository().findImageByImageId(imageId);
 				FileUtils.writeByteArrayToFile(targetFile, image.getData());
 			}
 			
-			File targetFilteredImage = new File(this.filteredDirectory.getAbsolutePath() + File.separator + filterName + File.separator + imagePath);
-			if (false == targetFilteredImage.getAbsolutePath().startsWith(this.filteredDirectory.getAbsolutePath())) {
+			File targetFilteredImage = new File(metadata.getFilteredDirectory().getAbsolutePath() + File.separator + filterName + File.separator + imagePath);
+			if (false == targetFilteredImage.getAbsolutePath().startsWith(metadata.getFilteredDirectory().getAbsolutePath())) {
 				throw new RuntimeException(); //FIXME
 			}
 			
 			if (false == targetFilteredImage.exists()) {
 				Builder<File> builder = Thumbnails.of(targetFile);
-				if (false == filterSource.getFilters().containsKey(filterName)) {
+				if (false == metadata.getFilterSource().getFilters().containsKey(filterName)) {
 					throw new FilterNotFoundException(filterName);
 				}
-				List<ThumbnailerFilter> filters = filterSource.getFilters().get(filterName);
+				List<ThumbnailerFilter> filters = metadata.getFilterSource().getFilters().get(filterName);
 				if (null != filters && filters.size() > 0) {
 					for (ThumbnailerFilter targetFilter : filters) {
 						targetFilter.filter(builder);

@@ -3,6 +3,7 @@ package com.prime.web.thumbnailer.config;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -23,7 +24,7 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) 
 	{
-		for (String directoryAttribute : thumbnailer_attributes) {
+		for (String directoryAttribute : Arrays.asList(BeanDefinitionIdentifier.RAW_IMAGE_FILE, BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)) {
 			BeanDefinitionBuilder builder = rootBeanDefinition(File.class);
 			String targetDirectory = element.getAttribute(directoryAttribute);
 			if (null == targetDirectory || "" == targetDirectory) {
