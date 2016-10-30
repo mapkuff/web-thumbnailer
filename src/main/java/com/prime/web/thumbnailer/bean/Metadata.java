@@ -2,8 +2,6 @@ package com.prime.web.thumbnailer.bean;
 
 import java.io.File;
 
-import com.prime.web.thumbnailer.repository.ThumbnailerRepository;
-
 public class Metadata 
 {
 	private String baseUrl;
@@ -12,18 +10,11 @@ public class Metadata
 	
 	private File filteredDirectory;
 	
-	private ThumbnailerFilterSource filterSource;
-	
-	private ThumbnailerRepository repository;
-
-	public Metadata(String baseUrl, File sourceDirectory, File filteredDirectory, ThumbnailerFilterSource filterSource,
-			ThumbnailerRepository repository) 
+	public Metadata(String baseUrl, File sourceDirectory, File filteredDirectory) 
 	{
 		this.baseUrl = baseUrl;
 		this.sourceDirectory = sourceDirectory;
 		this.filteredDirectory = filteredDirectory;
-		this.filterSource = filterSource;
-		this.repository = repository;
 	}
 
 	public String getBaseUrl() {
@@ -38,11 +29,4 @@ public class Metadata
 		return filteredDirectory;
 	}
 
-	public ThumbnailerFilterSource getFilterSource() {
-		return filterSource;
-	}
-
-	public ThumbnailerRepository getRepository() {
-		return repository;
-	}
 }

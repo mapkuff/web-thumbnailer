@@ -1,12 +1,16 @@
 package com.prime.web.thumbnailer.bean;
 
 import java.io.File;
+import java.io.IOException;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.Assert;
 
 import com.prime.web.thumbnailer.config.BeanDefinitionIdentifier;
-import com.prime.web.thumbnailer.repository.ThumbnailerRepository;
 
 /**
  * Default Implementation of MetadataSource
@@ -14,31 +18,47 @@ import com.prime.web.thumbnailer.repository.ThumbnailerRepository;
 public class MetadataSourceImpl implements MetadataSource
 {
 	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.RAW_IMAGE_FILE)
-	private File sourceDirectory;
+	@Qualifier(BeanDefinitionIdentifier.SOURCE_DIRECTORY)
+	private String sourceDirectory;
 
 	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)
-	private File filteredDirectory;
+	@Qualifier(BeanDefinitionIdentifier.SOURCE_DIRECTORY)
+	private String filteredDirectory;
 	
 	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)
-	private ThumbnailerFilterSource filterSource;
-	
-	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)
-	private ThumbnailerRepository repository;
-	
-	@Autowired
-	@Qualifier(BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)
+	@Qualifier(BeanDefinitionIdentifier.BASE_URL)
 	private String baseUrl;
 	
+	@Autowired
+	private ResourceLoader resourceLoader;
+	
 	private Metadata metadata;
+	
+	@PostConstruct
+	public void init() throws IOException
+	{
+		File sourceDirectory = this.resourceLoader.getResource(this.sourceDirectory).getFile();
+		File filteredDirectory = this.resourceLoader.getResource(this.filteredDirectory).getFile();
+		
+		if( false == sourceDirectory.exists() ) {
+			Assert.isTrue(sourceDirectory.mkdirs(), "Unable to create directory for SourceDirectory, may be a permission issue. Please check on a specify directory: " + sourceDirectory.getAbsolutePath());
+		}
+		
+		if( false == filteredDirectory.exists() ) {
+			Assert.isTrue(filteredDirectory.mkdirs(), "Unable to create directory for Filtered"
+					+ "Directory, may be a permission issue. Please check on a specify directory: " + filteredDirectory.getAbsolutePath());
+		}
+		
+		Assert.isTrue(sourceDirectory.isDirectory(), "SourceDictory must be a directory: " + sourceDirectory.getAbsolutePath());
+		Assert.isTrue(filteredDirectory.isDirectory(), "FilteredDictory must be a directory: " + filteredDirectory.getAbsolutePath()); //TODO
+		
+		metadata = new Metadata(baseUrl, sourceDirectory, filteredDirectory);
+		this.notifyAll();
+	}
+	
+	
 
 	public Metadata getMetadata() {
-		if ( null == metadata ) {
-			metadata = new Metadata(baseUrl, sourceDirectory, filteredDirectory, filterSource, repository);
-		}
 		return metadata;
 	}
 }

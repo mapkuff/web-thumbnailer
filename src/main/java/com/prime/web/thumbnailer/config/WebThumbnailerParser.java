@@ -2,8 +2,9 @@ package com.prime.web.thumbnailer.config;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
-import java.io.File;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 import com.prime.web.thumbnailer.exception.ThumnailerConfigInitializeException;
@@ -20,30 +22,35 @@ import com.prime.web.thumbnailer.util.ThumbnailerUtil;
 
 public class WebThumbnailerParser  implements BeanDefinitionParser 
 {
-	private final String[] thumbnailer_attributes = new String[]{"raw-image-directory", "filtered-image-directory"};
+	public static final String XML_ATTR_SOURCE_DIRECTORY = "source-image-directory";
+	public static final String XML_ATTR_FILTERED_DIRECTORY = "filtered-image-directory";
+	public static final String XML_ATTR_BASE_URL = "base-url";
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) 
 	{
-		for (String directoryAttribute : Arrays.asList(BeanDefinitionIdentifier.RAW_IMAGE_FILE, BeanDefinitionIdentifier.FILTERED_IMAGE_FILE)) {
-			BeanDefinitionBuilder builder = rootBeanDefinition(File.class);
-			String targetDirectory = element.getAttribute(directoryAttribute);
-			if (null == targetDirectory || "" == targetDirectory) {
-				throw new ThumnailerConfigInitializeException("Configuration for " + directoryAttribute + "was empty.");
-			}
-			File file = new File(targetDirectory);
-			file.mkdirs();
-			if (false == file.exists()) {
-				throw new ThumnailerConfigInitializeException("Permission denied on creating directory: " + file.getAbsolutePath());
+		Map<String, String> xmlAttributeToBeanIdentifierMap = new HashMap<String, String>();
+		xmlAttributeToBeanIdentifierMap.put(XML_ATTR_SOURCE_DIRECTORY, BeanDefinitionIdentifier.SOURCE_DIRECTORY);
+		xmlAttributeToBeanIdentifierMap.put(XML_ATTR_FILTERED_DIRECTORY, BeanDefinitionIdentifier.FILTERED_DIRECTORY);
+		xmlAttributeToBeanIdentifierMap.put(XML_ATTR_BASE_URL, BeanDefinitionIdentifier.BASE_URL);
+		
+		for (Entry<String, String> entry : xmlAttributeToBeanIdentifierMap.entrySet()) {
+			
+			String xmlAttribute = entry.getKey();
+			String identifier = entry.getValue();
+			
+			BeanDefinitionBuilder builder = rootBeanDefinition(String.class);
+			String targetDirectory = element.getAttribute(xmlAttribute);
+			if (StringUtils.isEmpty(targetDirectory) ) {
+				throw new ThumnailerConfigInitializeException("Configuration for " + xmlAttribute + "was empty.");
 			}
 			builder.addConstructorArgValue(targetDirectory);
-//			builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
-			
 			AbstractBeanDefinition def = builder.getRawBeanDefinition();
 			def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 			def.setSource(parserContext.extractSource(element));
-			parserContext.registerBeanComponent(new BeanComponentDefinition(def, BeanDefinitionIdentifier.ATTRIBUTE_TO_BEAN_ID_MAP.get(directoryAttribute)));
+			parserContext.registerBeanComponent(new BeanComponentDefinition(def, identifier));
 		}
 		
+		// Repository
 		BeanDefinitionBuilder builder = rootBeanDefinition(ThumbnailerRepositoryImpl.class);
 		builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 		AbstractBeanDefinition def = builder.getRawBeanDefinition();
@@ -51,6 +58,7 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailerRepositoryImpl.class.getName()));
 		
+		// Utils
 		builder = rootBeanDefinition(ThumbnailerUtil.class);
 		builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 		def = builder.getRawBeanDefinition();
@@ -58,7 +66,7 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailerUtil.class.getName()));
 		
-		
+		// Entity Register Post Processor
 		builder = rootBeanDefinition(EntityManagemntBeanPostProcessor.class);
 		def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);

@@ -7,14 +7,12 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.prime.web.thumbnailer.bean.Metadata;
 import com.prime.web.thumbnailer.bean.MetadataSource;
 import com.prime.web.thumbnailer.bean.ThumbnailerFilter;
 import com.prime.web.thumbnailer.bean.ThumbnailerFilterSource;
-import com.prime.web.thumbnailer.config.BeanDefinitionIdentifier;
 import com.prime.web.thumbnailer.domain.Image;
 import com.prime.web.thumbnailer.exception.EmptyFileUploadException;
 import com.prime.web.thumbnailer.exception.FilterNotFoundException;
@@ -28,6 +26,12 @@ public class ThumbnailerUtil
 {
 	@Autowired
 	private MetadataSource metadataSource;
+	
+	@Autowired
+	private ThumbnailerRepository repository;
+	
+	@Autowired
+	private ThumbnailerFilterSource filterSource;
 
 	public String upload(MultipartFile file) {
 		Metadata metadata = metadataSource.getMetadata();
@@ -50,7 +54,7 @@ public class ThumbnailerUtil
 			Image image = new Image();
 			image.setData(data);
 			image.setId(imageId);
-			metadata.getRepository().save(image);
+			repository.save(image);
 
 			FileUtils.writeByteArrayToFile(serverFile, data);
 
@@ -67,7 +71,7 @@ public class ThumbnailerUtil
 			String imagePath = imageId.replace('/', File.separatorChar);
 			File targetFile = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + imagePath );
 			if (false == targetFile.exists()) {
-				Image image = metadata.getRepository().findImageByImageId(imageId);
+				Image image = repository.findImageByImageId(imageId);
 				FileUtils.writeByteArrayToFile(targetFile, image.getData());
 			}
 			
@@ -78,10 +82,10 @@ public class ThumbnailerUtil
 			
 			if (false == targetFilteredImage.exists()) {
 				Builder<File> builder = Thumbnails.of(targetFile);
-				if (false == metadata.getFilterSource().getFilters().containsKey(filterName)) {
+				if (false == this.filterSource.getFilters().containsKey(filterName)) {
 					throw new FilterNotFoundException(filterName);
 				}
-				List<ThumbnailerFilter> filters = metadata.getFilterSource().getFilters().get(filterName);
+				List<ThumbnailerFilter> filters = this.filterSource.getFilters().get(filterName);
 				if (null != filters && filters.size() > 0) {
 					for (ThumbnailerFilter targetFilter : filters) {
 						targetFilter.filter(builder);
