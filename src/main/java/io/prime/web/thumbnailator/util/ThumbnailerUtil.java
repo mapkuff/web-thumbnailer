@@ -11,8 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.prime.web.thumbnailator.bean.Metadata;
 import io.prime.web.thumbnailator.bean.MetadataSource;
-import io.prime.web.thumbnailator.bean.ThumbnailerFilter;
-import io.prime.web.thumbnailator.bean.ThumbnailerFilterSource;
+import io.prime.web.thumbnailator.bean.ThumbnailatorFilter;
+import io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource;
 import io.prime.web.thumbnailator.domain.Image;
 import io.prime.web.thumbnailator.exception.EmptyFileUploadException;
 import io.prime.web.thumbnailator.exception.FilterNotFoundException;
@@ -30,7 +30,7 @@ public class ThumbnailerUtil
 	private ThumbnailerRepository repository;
 	
 	@Autowired
-	private ThumbnailerFilterSource filterSource;
+	private ThumbnailatorFilterSource filterSource;
 
 	public String upload(MultipartFile file) {
 		Metadata metadata = metadataSource.getMetadata();
@@ -84,9 +84,9 @@ public class ThumbnailerUtil
 				if (false == this.filterSource.getFilters().containsKey(filterName)) {
 					throw new FilterNotFoundException(filterName);
 				}
-				List<ThumbnailerFilter> filters = this.filterSource.getFilters().get(filterName);
+				List<ThumbnailatorFilter> filters = this.filterSource.getFilters().get(filterName);
 				if (null != filters && filters.size() > 0) {
-					for (ThumbnailerFilter targetFilter : filters) {
+					for (ThumbnailatorFilter targetFilter : filters) {
 						targetFilter.filter(builder);
 					}
 				}

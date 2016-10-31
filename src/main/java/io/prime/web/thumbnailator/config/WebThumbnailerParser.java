@@ -20,6 +20,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import io.prime.web.thumbnailator.bean.MetadataSourceImpl;
 import io.prime.web.thumbnailator.exception.ThumnailerConfigInitializeException;
 import io.prime.web.thumbnailator.repository.ThumbnailerRepositoryImpl;
 import io.prime.web.thumbnailator.util.ThumbnailerUtil;
@@ -77,16 +78,14 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, EntityManagemntBeanPostProcessor.class.getName()));
 		
-		NodeList childNodes = element.getChildNodes();
-		Element filters = null;
-		for (int i = 0; i<childNodes.getLength(); i++) {
-			Node node = childNodes.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-		        Element elem = (Element) node;
-		        System.out.println(elem.getTagName());
-		        filters = elem;
-		    }
-		}
+		
+		// Entity Register Post Processor
+		builder = rootBeanDefinition(MetadataSourceImpl.class);
+		def = builder.getRawBeanDefinition();
+		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		def.setSource(parserContext.extractSource(element));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, MetadataSourceImpl.class.getName()));
+		
 		return null;
 	}
 

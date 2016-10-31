@@ -5,6 +5,7 @@
 	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:websocket="http://www.springframework.org/schema/websocket"
 	xmlns:facebook="http://www.springframework.org/schema/social/facebook"
 	xmlns:thmb="http://www.prime.in.th/schema/web/thumbnailator"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
@@ -20,6 +21,8 @@
        http://www.springframework.org/schema/cache/spring-cache-4.2.xsd
        http://www.springframework.org/schema/websocket
        http://www.springframework.org/schema/websocket/spring-websocket-4.2.xsd
+       http://www.springframework.org/schema/jdbc
+       http://www.springframework.org/schema/jdbc/spring-jdbc-4.2.xsd
        http://www.prime.in.th/schema/web/thumbnailator
        http://www.prime.in.th/schema/web/thumbnailator.xsd
        ">
@@ -57,5 +60,47 @@
 		/> -->
 		
 	<thmb:web-thumbnailer source-image-directory="classpath:assets/img-src" filtered-image-directory="classpath:assets/img-filter" base-url="/image" />
+	
+	<bean class="io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource">
+		<property name="filters">
+			<map>
+				<entry key="default"><null /></entry>
+			</map>
+		</property>
+	</bean>
+	
+	
+	<jdbc:embedded-database id="dataSource" type="H2"></jdbc:embedded-database>	
+	
+	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+		<property name="showSql" value="${jpa.showSql}" />
+		<property name="database" value="${jdbc.database}" />
+	</bean>
+	
+
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
+		<property name="packagesToScan" value="io.prime.web.thumbnailator.domain" />
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.physical_naming_strategy">com.prime.web.thumbnailer.test.assets.HibernatePhysicalNamingStrategyImpl</prop>
+				<prop key="hibernate.archive.autodetection">class</prop>
+				<prop key="javax.persistence.validation.mode">NONE</prop>
+				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>
+			</props>
+		</property>
+	</bean>
+<!-- 	<bean id="interceptor" class="com.krungsri.auth.mobile.console.event.listener.AuditInterceptor" depends-on="entityManagerFactory"/> -->
+	
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" mode="proxy" proxy-target-class="false" />
+
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
+    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
 	
 </beans>

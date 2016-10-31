@@ -1,10 +1,10 @@
 package io.prime.web.thumbnailator.filter;
 
-import io.prime.web.thumbnailator.bean.ThumbnailerFilter;
+import io.prime.web.thumbnailator.bean.ThumbnailatorFilter;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 import net.coobird.thumbnailator.geometry.Coordinate;
 
-public class CropFilter implements ThumbnailerFilter
+public class CropFilter implements ThumbnailatorFilter
 {
 	private int width;
 	private int height;
