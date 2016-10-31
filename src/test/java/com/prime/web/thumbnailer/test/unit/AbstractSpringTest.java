@@ -1,4 +1,4 @@
-package com.prime.web.thumbnailer.test;
+package com.prime.web.thumbnailer.test.unit;
 
 import org.junit.After;
 import org.junit.Before;

@@ -53,7 +53,6 @@ public class MetadataSourceImpl implements MetadataSource
 		Assert.isTrue(filteredDirectory.isDirectory(), "FilteredDictory must be a directory: " + filteredDirectory.getAbsolutePath()); //TODO
 		
 		metadata = new Metadata(baseUrl, sourceDirectory, filteredDirectory);
-		this.notifyAll();
 	}
 	
 	

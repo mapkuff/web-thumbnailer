@@ -11,7 +11,7 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="THMB_IMAGE")
+@Table(name="WEB_THMB_IMAGE")
 public class Image implements Serializable
 {
 	/**

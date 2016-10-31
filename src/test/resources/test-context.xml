@@ -59,7 +59,7 @@
 	<!-- <context:load-time-weaver aspectj-weaving="on" weaver-class="org.springframework.instrument.classloading.ReflectiveLoadTimeWeaver" 
 		/> -->
 		
-	<thmb:web-thumbnailer source-image-directory="classpath:assets/img-src" filtered-image-directory="classpath:assets/img-filter" base-url="/image" />
+	<thmb:web-thumbnailer source-image-directory="src/test/resources/assets/img-src" filtered-image-directory="src/test/resources/assets/img-filtered" base-url="/image" />
 	
 	<bean class="io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource">
 		<property name="filters">
@@ -82,7 +82,7 @@
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
-		<property name="packagesToScan" value="io.prime.web.thumbnailator.domain" />
+		<property name="packagesToScan" value="" />
 		<property name="jpaProperties">
 			<props>
 				<prop key="hibernate.physical_naming_strategy">com.prime.web.thumbnailer.test.assets.HibernatePhysicalNamingStrategyImpl</prop>
