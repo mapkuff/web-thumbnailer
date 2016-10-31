@@ -3,10 +3,10 @@ package io.prime.web.thumbnailator.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.prime.web.thumbnailator.bean.Metadata;
@@ -17,7 +17,8 @@ import io.prime.web.thumbnailator.domain.Image;
 import io.prime.web.thumbnailator.exception.EmptyFileUploadException;
 import io.prime.web.thumbnailator.exception.FilterNotFoundException;
 import io.prime.web.thumbnailator.exception.NestedIOException;
-import io.prime.web.thumbnailator.repository.ThumbnailerRepository;
+import io.prime.web.thumbnailator.factory.ImageIdFactory;
+import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 
@@ -27,10 +28,13 @@ public class ThumbnailerUtil
 	private MetadataSource metadataSource;
 	
 	@Autowired
-	private ThumbnailerRepository repository;
+	private ThumbnailatorImageRepository repository;
 	
 	@Autowired
 	private ThumbnailatorFilterSource filterSource;
+	
+	@Autowired
+	private ImageIdFactory imageIdFactory;
 
 	public String upload(MultipartFile file) {
 		Metadata metadata = metadataSource.getMetadata();
@@ -38,11 +42,9 @@ public class ThumbnailerUtil
 			if (file.isEmpty()) {
 				throw new EmptyFileUploadException();
 			}
-			UUID uuid = UUID.randomUUID();
-			String uuidString = uuid.toString().replace('-', Character.MIN_VALUE);
-			String imageId = uuidString + "/" + file.getName();
-			File targetDir = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + uuidString);
-			targetDir.mkdir();
+			String imageId = this.imageIdFactory.generate(file.getName());
+			File targetDir = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + imageId.replaceAll("/", File.separator));
+			Assert.isTrue(targetDir.mkdirs());
 
 			File serverFile = new File(targetDir.getAbsolutePath() + File.separator + file.getName());
 			if (false == serverFile.getAbsolutePath().startsWith(metadata.getSourceDirectory().getAbsolutePath())) {
@@ -70,7 +72,7 @@ public class ThumbnailerUtil
 			String imagePath = imageId.replace('/', File.separatorChar);
 			File targetFile = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + imagePath );
 			if (false == targetFile.exists()) {
-				Image image = repository.findImageByImageId(imageId);
+				Image image = repository.findOne(imageId);
 				FileUtils.writeByteArrayToFile(targetFile, image.getData());
 			}
 			

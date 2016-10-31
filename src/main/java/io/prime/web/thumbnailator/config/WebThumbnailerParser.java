@@ -8,21 +8,18 @@ import java.util.Map.Entry;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.parsing.BeanComponentDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
-import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import io.prime.web.thumbnailator.bean.MetadataSourceImpl;
 import io.prime.web.thumbnailator.exception.ThumnailerConfigInitializeException;
-import io.prime.web.thumbnailator.repository.ThumbnailerRepositoryImpl;
+import io.prime.web.thumbnailator.factory.UUIDImageIdFactory;
+import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepositoryImpl;
 import io.prime.web.thumbnailator.util.ThumbnailerUtil;
 
 public class WebThumbnailerParser  implements BeanDefinitionParser 
@@ -56,12 +53,12 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		}
 		
 		// Repository
-		BeanDefinitionBuilder builder = rootBeanDefinition(ThumbnailerRepositoryImpl.class);
+		BeanDefinitionBuilder builder = rootBeanDefinition(ThumbnailatorImageRepositoryImpl.class);
 		builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 		AbstractBeanDefinition def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		def.setSource(parserContext.extractSource(element));
-		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailerRepositoryImpl.class.getName()));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailatorImageRepositoryImpl.class.getName()));
 		
 		// Utils
 		builder = rootBeanDefinition(ThumbnailerUtil.class);
@@ -85,6 +82,13 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, MetadataSourceImpl.class.getName()));
+		
+		// Image ID Factory
+		builder = rootBeanDefinition(UUIDImageIdFactory.class);
+		def = builder.getRawBeanDefinition();
+		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		def.setSource(parserContext.extractSource(element));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, UUIDImageIdFactory.class.getName()));
 		
 		return null;
 	}

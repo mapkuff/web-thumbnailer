@@ -27,22 +27,12 @@ public class Image implements Serializable
 	@Basic(fetch=FetchType.LAZY)
 	private byte[] data;
 	
-	private boolean used;
-
 	public byte[] getData() {
 		return data;
 	}
 
 	public void setData(byte[] data) {
 		this.data = data;
-	}
-
-	public boolean isUsed() {
-		return used;
-	}
-
-	public void setUsed(boolean used) {
-		this.used = used;
 	}
 
 	public String getId() {

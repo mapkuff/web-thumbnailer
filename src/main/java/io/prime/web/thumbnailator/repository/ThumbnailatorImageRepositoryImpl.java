@@ -8,15 +8,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.prime.web.thumbnailator.domain.Image;
 
-public class ThumbnailerRepositoryImpl implements ThumbnailerRepository
+public class ThumbnailatorImageRepositoryImpl implements ThumbnailatorImageRepository
 {
 	@PersistenceContext
 	private EntityManager em;
 
 	@Transactional(readOnly=true)
-	public Image findImageByImageId(String imageId) 
+	public Image findOne(String imageId) 
 	{
-		TypedQuery<Image> query = this.em.createQuery("SELECT e FROM %s e where e.id = ?1", Image.class);
+		TypedQuery<Image> query = this.em.createQuery(
+				String.format(
+					"SELECT e FROM %s e where e.id = ?1",
+					Image.class.getName()
+				), 
+				Image.class
+			);
 		query.setParameter(1, imageId);
 		return query.getSingleResult();
 	}
@@ -27,10 +33,4 @@ public class ThumbnailerRepositoryImpl implements ThumbnailerRepository
 		this.em.persist(image);
 	}
 	
-	@Transactional
-	public Image update(Image image)
-	{
-		return this.em.merge(image);
-	}
-
 }
