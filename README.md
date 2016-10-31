@@ -1,1 +1,1 @@
-# web-thumbnailer
+# web-thumbnailator

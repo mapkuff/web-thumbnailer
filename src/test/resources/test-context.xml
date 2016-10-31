@@ -4,7 +4,7 @@
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:task="http://www.springframework.org/schema/task"
 	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:websocket="http://www.springframework.org/schema/websocket"
 	xmlns:facebook="http://www.springframework.org/schema/social/facebook"
-	xmlns:thmb="http://www.prime.in.th/schema/prime/web/thumbnailer"
+	xmlns:thmb="http://www.prime.in.th/schema/web/thumbnailator"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
@@ -20,8 +20,8 @@
        http://www.springframework.org/schema/cache/spring-cache-4.2.xsd
        http://www.springframework.org/schema/websocket
        http://www.springframework.org/schema/websocket/spring-websocket-4.2.xsd
-       http://www.prime.in.th/schema/prime/web/thumbnailer
-       http://www.prime.in.th/schema/web/thumbnailer.xsd
+       http://www.prime.in.th/schema/web/thumbnailator
+       http://www.prime.in.th/schema/web/thumbnailator.xsd
        ">
 
 <!-- 	<cache:annotation-driven />
@@ -45,10 +45,10 @@
 	<task:scheduler id="taskScheduler" pool-size="10" />
 	<task:executor id="taskExecutor" pool-size="5" 	queue-capacity="10" />
 
-	<context:component-scan base-package="com.prime">
+	<!-- <context:component-scan base-package="io.prime">
 		 <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 		 <context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
-	</context:component-scan>
+	</context:component-scan> -->
 	
 	<!-- <context:annotation-config />
 	<context:spring-configured /> -->
@@ -56,9 +56,6 @@
 	<!-- <context:load-time-weaver aspectj-weaving="on" weaver-class="org.springframework.instrument.classloading.ReflectiveLoadTimeWeaver" 
 		/> -->
 		
-	<thmb:web-thumbnailer source-image-directory="classpath:assets/img-src" filtered-image-directory="classpath:assets/img-filter" baseUrl="/image">
-		<thmb:filters>
-		</thmb:filters>
-	</thmb:web-thumbnailer>	
+	<thmb:web-thumbnailer source-image-directory="classpath:assets/img-src" filtered-image-directory="classpath:assets/img-filter" base-url="/image" />
 	
 </beans>
