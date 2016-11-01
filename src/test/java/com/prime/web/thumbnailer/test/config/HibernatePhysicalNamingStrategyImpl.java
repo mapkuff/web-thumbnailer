@@ -1,4 +1,4 @@
-package com.prime.web.thumbnailer.test.assets;
+package com.prime.web.thumbnailer.test.config;
 
 import java.util.Locale;
 
