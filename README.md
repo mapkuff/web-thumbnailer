@@ -7,7 +7,7 @@
 # Installation
 - `checkout` this branch using git and then `mvn install`
 
-# Configuration >> Spring
+# Configuration -> Spring
 1. Define spring configuration including web-thumbnailer configuration tag and define bean of type `io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource`
 
 
@@ -38,15 +38,15 @@
 			
 		</beans>
 	
-# Configuration >> Servlet
+# Configuration -> Servlet
 //TODO
 
-# Usage >> Image Persisting		
+# Usage -> Image Persisting		
 1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
 2. And then you can persist image using variety of overload methods of `ThumbnailatorUtil.create()` 
 3. Once you persisted your image, you will get imageId as a `String`. store it wherever you want.
 
-# Usage >> Image Serving
+# Usage -> Image Serving
 Assume that you have
 - `example.com` as your host name.
 - `/sampleApp` as your contextPath.
