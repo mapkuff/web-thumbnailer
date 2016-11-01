@@ -28,7 +28,7 @@ import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 
-public class ThumbnailerUtil 
+public class ThumbnailatorUtil 
 {
 	@Autowired
 	private MetadataSource metadataSource;

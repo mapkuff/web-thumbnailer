@@ -28,7 +28,7 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import io.prime.web.thumbnailator.bean.ImageInformation;
 import io.prime.web.thumbnailator.bean.MetadataSource;
 import io.prime.web.thumbnailator.exception.ImageInformationParsingException;
-import io.prime.web.thumbnailator.util.ThumbnailerUtil;
+import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 
 public class ImageFilter implements Filter
 {
@@ -40,7 +40,7 @@ public class ImageFilter implements Filter
 	private MetadataSource metadataSource;
 	
 	@Autowired
-	private ThumbnailerUtil thumbnailerUtil;
+	private ThumbnailatorUtil thumbnailerUtil;
 	
 	private Boolean isAsyncSupport = null;
 

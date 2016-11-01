@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import io.prime.web.thumbnailator.bean.ImageInformation;
 import io.prime.web.thumbnailator.bean.MetadataSource;
-import io.prime.web.thumbnailator.util.ThumbnailerUtil;
+import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 
 public class ImageFilterAsyncTask implements Runnable
 {
@@ -22,9 +22,9 @@ public class ImageFilterAsyncTask implements Runnable
 	
 	private MetadataSource metadataSource;
 	
-	private ThumbnailerUtil thumbnailerUtil;
+	private ThumbnailatorUtil thumbnailerUtil;
 	
-	public ImageFilterAsyncTask(AsyncContext asyncContext, MetadataSource metadataSource,ThumbnailerUtil thumbnailerUtil) 
+	public ImageFilterAsyncTask(AsyncContext asyncContext, MetadataSource metadataSource,ThumbnailatorUtil thumbnailerUtil) 
 	{
 		this.asyncContext = asyncContext;
 		this.metadataSource = metadataSource;

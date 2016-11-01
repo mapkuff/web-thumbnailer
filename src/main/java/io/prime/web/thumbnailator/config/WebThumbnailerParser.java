@@ -19,7 +19,7 @@ import org.w3c.dom.Element;
 import io.prime.web.thumbnailator.bean.MetadataSourceImpl;
 import io.prime.web.thumbnailator.exception.ThumnailerConfigInitializeException;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepositoryImpl;
-import io.prime.web.thumbnailator.util.ThumbnailerUtil;
+import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
 public class WebThumbnailerParser  implements BeanDefinitionParser 
@@ -61,12 +61,12 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailatorImageRepositoryImpl.class.getName()));
 		
 		// Utils
-		builder = rootBeanDefinition(ThumbnailerUtil.class);
+		builder = rootBeanDefinition(ThumbnailatorUtil.class);
 		builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
 		def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_SUPPORT);
 		def.setSource(parserContext.extractSource(element));
-		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailerUtil.class.getName()));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailatorUtil.class.getName()));
 		
 		// Entity Register Post Processor
 		builder = rootBeanDefinition(EntityManagemntBeanPostProcessor.class);
