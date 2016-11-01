@@ -10,13 +10,14 @@ public class Metadata
 	
 	private File filteredDirectory;
 	
-	private boolean databaseEnabled = true; //TODO
+	private boolean databaseEnabled;
 	
-	public Metadata(String baseUrl, File sourceDirectory, File filteredDirectory) 
+	public Metadata(String baseUrl, File sourceDirectory, File filteredDirectory, boolean databaseEnabled) 
 	{
 		this.baseUrl = baseUrl;
 		this.sourceDirectory = sourceDirectory;
 		this.filteredDirectory = filteredDirectory;
+		this.databaseEnabled = databaseEnabled;
 	}
 
 	public String getBaseUrl() {

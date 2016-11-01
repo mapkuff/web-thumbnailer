@@ -30,6 +30,10 @@ public class MetadataSourceImpl implements MetadataSource
 	private String baseUrl;
 	
 	@Autowired
+	@Qualifier(BeanDefinitionIdentifier.DATABASE_ENABLED)
+	private Boolean databaseEnabled;
+	
+	@Autowired
 	private ResourceLoader resourceLoader;
 	
 	private Metadata metadata;
@@ -52,7 +56,7 @@ public class MetadataSourceImpl implements MetadataSource
 		Assert.isTrue(sourceDirectory.isDirectory(), "SourceDictory must be a directory: " + sourceDirectory.getAbsolutePath());
 		Assert.isTrue(filteredDirectory.isDirectory(), "FilteredDictory must be a directory: " + filteredDirectory.getAbsolutePath()); //TODO
 		
-		metadata = new Metadata(baseUrl, sourceDirectory, filteredDirectory);
+		metadata = new Metadata(baseUrl, sourceDirectory, filteredDirectory, this.databaseEnabled.booleanValue());
 	}
 	
 	

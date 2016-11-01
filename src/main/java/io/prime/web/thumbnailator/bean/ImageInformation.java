@@ -30,14 +30,22 @@ public class ImageInformation
 	{
 		String imageUrl = request.getRequestURI().substring(metadataSource.getMetadata().getBaseUrl().length());
 		imageUrl = StringUtils.trimLeadingCharacter(imageUrl, '/');
+		imageUrl = StringUtils.trimTrailingCharacter(imageUrl, '/');
 		String[] imageTokens = imageUrl.split("/");
 		
-		if (3 != imageTokens.length) {
-			throw new ImageInformationParsingException(String.format("Unable to parse url to ImageInformation, {url: %s, imgUrl: %s}", request.getRequestURI(), imageUrl));
+		if (imageTokens.length < 2) {
+			throw new ImageInformationParsingException(String.format("Unable to parse url to ImageInformation, {url: %s, baseUrl: %s}", request.getRequestURI(), metadataSource.getMetadata().getBaseUrl()));
 		}
 		
 		String filterName = imageTokens[0];
-		String imageId = imageTokens[1] + '/' + imageTokens[2];
+		int tokenLength = imageTokens.length;
+		String imageId = "";
+		for (int i=1 ; i<tokenLength; i++) {
+			imageId += imageTokens[i];
+			if (i < tokenLength-1) {
+				imageId += "/";
+			}
+		}
 		
 		return new ImageInformation(filterName, imageId);
 	}

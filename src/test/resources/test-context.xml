@@ -89,7 +89,7 @@
 		<property name="packagesToScan" value="" />
 		<property name="jpaProperties">
 			<props>
-				<prop key="hibernate.physical_naming_strategy">com.prime.web.thumbnailer.test.assets.HibernatePhysicalNamingStrategyImpl</prop>
+				<prop key="hibernate.physical_naming_strategy">com.prime.web.thumbnailer.test.config.HibernatePhysicalNamingStrategyImpl</prop>
 				<prop key="hibernate.archive.autodetection">class</prop>
 				<prop key="javax.persistence.validation.mode">NONE</prop>
 				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>

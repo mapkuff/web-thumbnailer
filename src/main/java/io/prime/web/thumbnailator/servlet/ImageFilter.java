@@ -1,11 +1,9 @@
 package io.prime.web.thumbnailator.servlet;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,22 +17,19 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
-import io.prime.web.thumbnailator.bean.ImageInformation;
 import io.prime.web.thumbnailator.bean.MetadataSource;
-import io.prime.web.thumbnailator.exception.ImageInformationParsingException;
 import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 
 public class ImageFilter implements Filter
 {
 	private static Logger logger = LoggerFactory.getLogger(ImageFilter.class);
 	
-	private ExecutorService executor = Executors.newFixedThreadPool(4);
+	private ExecutorService executor;
 	
 	@Autowired
 	private MetadataSource metadataSource;
@@ -47,6 +42,7 @@ public class ImageFilter implements Filter
 	public void init(FilterConfig filterConfig) throws ServletException 
 	{
 		SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(this,	filterConfig.getServletContext());
+		executor = Executors.newFixedThreadPool(4);
 	}
 
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException 
@@ -56,23 +52,9 @@ public class ImageFilter implements Filter
 		if (request.getRequestURI().startsWith(this.metadataSource.getMetadata().getBaseUrl())) {
 			if (this.isAsyncSupport(request)) {
 				final AsyncContext asyncContext = request.startAsync();
-				this.getExcecutor().submit(new ImageFilterAsyncTask(asyncContext, this.metadataSource, thumbnailerUtil));
+				this.getExcecutor().submit(new ImageFilterAsyncHandler(asyncContext, this.metadataSource, thumbnailerUtil));
 			} else {
-				try {
-					ImageInformation imageInformation = ImageInformation.fromServletRequest(request, metadataSource);
-					File file = this.thumbnailerUtil.get(imageInformation.getImageId(), imageInformation.getFilterName());
-					try {
-						ImageFilter.handleImageServing(response, file);
-					} catch (Exception e) {
-						if (response.isCommitted()){
-							logger.error("Error while serving image file", e);
-						} else {
-							ImageFilter.handleException(response, e);
-						}
-					}
-				} catch (ImageInformationParsingException e) {
-					ImageFilter.handleException(response, e);
-				}
+				this.getExcecutor().submit(new ImageFilterHandler(metadataSource, thumbnailerUtil, request, response));
 			}
 		} else {
 			chain.doFilter(request, response);
@@ -108,13 +90,7 @@ public class ImageFilter implements Filter
 	
 	public static void handleImageServing(HttpServletResponse response, File file) throws IOException
 	{
-		String contentType = Files.probeContentType(file.toPath());
-		if (false == contentType.startsWith("image")) {
-			
-		}
-		response.setHeader("Content-Type", contentType);
-		response.flushBuffer();
-		IOUtils.copy(new FileInputStream(file), response.getOutputStream());
+		
 	}
 	
 	public static void handleException(HttpServletResponse response, Exception exception) throws IOException
