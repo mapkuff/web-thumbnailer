@@ -45,7 +45,8 @@ Assume that you have
 - `/images` as a Web-Thumbnailator baseUrl.
 - `crop_500x500` as your filter name to crop image to 500x500
 - `aaa/bbb/sample-image.jpg` as your imageId
-the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/aaa/bbb/sample-image.jpg`
+
+then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/aaa/bbb/sample-image.jpg`
 
 # Roadmap
 - need to review and do some tweaks before releasing.
