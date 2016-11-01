@@ -25,6 +25,7 @@ public class Image implements Serializable
 	
 	@Lob
 	@Basic(fetch=FetchType.LAZY)
+	@Column(name="data")
 	private byte[] data;
 	
 	public byte[] getData() {
