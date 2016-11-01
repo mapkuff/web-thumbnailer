@@ -60,7 +60,7 @@ public class ImageFilter implements Filter
 			} else {
 				try {
 					ImageInformation imageInformation = ImageInformation.fromServletRequest(request, metadataSource);
-					File file = this.thumbnailerUtil.getImageFile(imageInformation.getImageId(), imageInformation.getFilterName());
+					File file = this.thumbnailerUtil.get(imageInformation.getImageId(), imageInformation.getFilterName());
 					try {
 						ImageFilter.handleImageServing(response, file);
 					} catch (Exception e) {

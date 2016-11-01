@@ -1,12 +1,20 @@
 package io.prime.web.thumbnailator.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
+import javax.persistence.NoResultException;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.prime.web.thumbnailator.bean.Metadata;
@@ -14,9 +22,7 @@ import io.prime.web.thumbnailator.bean.MetadataSource;
 import io.prime.web.thumbnailator.bean.ThumbnailatorFilter;
 import io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource;
 import io.prime.web.thumbnailator.domain.Image;
-import io.prime.web.thumbnailator.exception.EmptyFileUploadException;
 import io.prime.web.thumbnailator.exception.FilterNotFoundException;
-import io.prime.web.thumbnailator.exception.NestedIOException;
 import io.prime.web.thumbnailator.factory.ImageIdFactory;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
@@ -35,69 +41,114 @@ public class ThumbnailerUtil
 	
 	@Autowired
 	private ImageIdFactory imageIdFactory;
-
-	public String upload(MultipartFile file) {
+	
+	public String create(InputStream input, String fileName) throws IOException
+	{
 		Metadata metadata = metadataSource.getMetadata();
-		try {
-			if (file.isEmpty()) {
-				throw new EmptyFileUploadException();
-			}
-			String imageId = this.imageIdFactory.generate(file.getName());
-			File targetDir = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + imageId.replaceAll("/", File.separator));
-			Assert.isTrue(targetDir.mkdirs());
-
-			File serverFile = new File(targetDir.getAbsolutePath() + File.separator + file.getName());
-			if (false == serverFile.getAbsolutePath().startsWith(metadata.getSourceDirectory().getAbsolutePath())) {
-				throw new RuntimeException("Malform imageId");
-			}
-
-			byte[] data = file.getBytes();
+		String imageId = this.imageIdFactory.generate(fileName);
+		
+		String ImagePath = metadata.getSourceDirectory().getPath() + File.separator + imageId.replaceAll("/", File.separator);
+		String imageDirectoryPath = ImagePath.substring(0, ImagePath.lastIndexOf(File.separator));
+		
+		File targetDir = new File(imageDirectoryPath);
+		Assert.isTrue(targetDir.mkdirs(), "Unable to create directory for image, may be a permission issue: " + imageDirectoryPath);
+		File imageSourceFile = new File(ImagePath);
+		
+		// save into DB
+		if (metadata.isDatabaseEnabled()) {
 			Image image = new Image();
-			image.setData(data);
+			try {
+				byte[] data = IOUtils.toByteArray(input);
+				image.setData(data);
+			} finally {
+				IOUtils.closeQuietly(input);
+			}
+			input = new ByteArrayInputStream(image.getData());
 			image.setId(imageId);
 			repository.save(image);
-
-			FileUtils.writeByteArrayToFile(serverFile, data);
-
-			return imageId;
-		} catch (IOException e) {
-			throw new NestedIOException(e.getMessage(), e);
 		}
+		
+		FileOutputStream fileOutputStream = null;
+		try {
+			Assert.isTrue(false == imageSourceFile.exists(), "Image already exists: " + ImagePath);
+			Assert.isTrue(imageSourceFile.createNewFile(), "Unable to create file: " + ImagePath);
+			fileOutputStream = new FileOutputStream(imageSourceFile);
+			IOUtils.copy(input, fileOutputStream);
+		} finally {
+			IOUtils.closeQuietly(fileOutputStream);
+			IOUtils.closeQuietly(input);
+		}
+		
+		return imageId;
 	}
 	
-	public File getImageFile(String imageId, String filterName) 
+	public String create(MultipartFile file) throws IOException 
+	{
+		return this.create(file.getInputStream(), file.getOriginalFilename());
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @param imageId
+	 * @param filterName
+	 * @return filtered image File
+	 * @throws IOException 
+	 * @throws FileNotFoundException
+	 * @throws NoResultException
+	 */
+	public File get(String imageId, String filterName) throws IOException 
 	{
 		Metadata metadata = this.metadataSource.getMetadata();
 		try {
-			String imagePath = imageId.replace('/', File.separatorChar);
-			File targetFile = new File(metadata.getSourceDirectory().getAbsolutePath() + File.separator + imagePath );
-			if (false == targetFile.exists()) {
-				Image image = repository.findOne(imageId);
-				FileUtils.writeByteArrayToFile(targetFile, image.getData());
-			}
-			
-			File targetFilteredImage = new File(metadata.getFilteredDirectory().getAbsolutePath() + File.separator + filterName + File.separator + imagePath);
-			if (false == targetFilteredImage.getAbsolutePath().startsWith(metadata.getFilteredDirectory().getAbsolutePath())) {
-				throw new RuntimeException(); //FIXME
-			}
-			
-			if (false == targetFilteredImage.exists()) {
-				Builder<File> builder = Thumbnails.of(targetFile);
-				if (false == this.filterSource.getFilters().containsKey(filterName)) {
-					throw new FilterNotFoundException(filterName);
+			imageId = imageId.replace('/', File.separatorChar);
+			File sourceFile = new File(metadata.getSourceDirectory().getPath() + File.separator + imageId );
+			if (false == sourceFile.exists()) {
+				if (false == metadata.isDatabaseEnabled()) {
+					throw new FileNotFoundException("Source image was not found: " + sourceFile.getPath());
 				}
-				List<ThumbnailatorFilter> filters = this.filterSource.getFilters().get(filterName);
-				if (null != filters && filters.size() > 0) {
-					for (ThumbnailatorFilter targetFilter : filters) {
-						targetFilter.filter(builder);
+				// recover file from DB
+				Image image = this.repository.findOne(imageId.replace(File.separatorChar, '/'));
+				synchronized (image.getId().intern()) {
+					if (false == sourceFile.exists()) {
+						Assert.isTrue(sourceFile.createNewFile()); //TODO message
+						InputStream input = new ByteArrayInputStream(image.getData());
+						OutputStream output = new FileOutputStream(sourceFile);
+						try{
+							IOUtils.copy(input, output);
+						} finally {
+							IOUtils.closeQuietly(input);
+							IOUtils.closeQuietly(output);
+						}
 					}
 				}
-				builder.allowOverwrite(false)
-					.toFile(targetFilteredImage);
 			}
-			return targetFilteredImage;
+			
+			File filteredImage = new File(metadata.getFilteredDirectory().getPath() + File.separator + filterName + File.separator + imageId);
+			if (false == filteredImage.exists()) {
+				// generate filtered image
+				synchronized (imageId.intern()) {
+					if (false == filteredImage.exists()) {
+						Builder<File> builder = Thumbnails.of(sourceFile);
+						if (false == this.filterSource.getFilters().containsKey(filterName)) {
+							throw new FilterNotFoundException(filterName);
+						}
+						List<ThumbnailatorFilter> filters = this.filterSource.getFilters().get(filterName);
+						if (false == CollectionUtils.isEmpty(filters)) {
+							for (ThumbnailatorFilter targetFilter : filters) {
+								targetFilter.filter(builder);
+							}
+						}
+						builder.allowOverwrite(false)
+							.toFile(filteredImage);
+					}
+				}
+			}
+			
+			return filteredImage;
 		} catch (IOException e) {
-			throw new NestedIOException(e.getMessage(), e);
+			throw e;
 		}
 	}
 

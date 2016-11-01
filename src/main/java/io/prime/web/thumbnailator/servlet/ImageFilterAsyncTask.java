@@ -37,7 +37,7 @@ public class ImageFilterAsyncTask implements Runnable
 		HttpServletResponse response = (HttpServletResponse) this.asyncContext.getResponse();
 		try {
 			ImageInformation imageInformation = ImageInformation.fromServletRequest(request, this.metadataSource);
-			File file = this.thumbnailerUtil.getImageFile(imageInformation.getImageId(), imageInformation.getFilterName());
+			File file = this.thumbnailerUtil.get(imageInformation.getImageId(), imageInformation.getFilterName());
 			ImageFilter.handleImageServing(response, file);
 		} catch (Exception e) {
 			try {
