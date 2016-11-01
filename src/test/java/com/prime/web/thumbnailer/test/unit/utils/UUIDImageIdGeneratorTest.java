@@ -1,4 +1,4 @@
-package com.prime.web.thumbnailer.test.unit.factory;
+package com.prime.web.thumbnailer.test.unit.utils;
 
 import java.lang.reflect.Field;
 
@@ -10,7 +10,7 @@ import io.prime.web.thumbnailator.util.FileNameValidatorImpl;
 import io.prime.web.thumbnailator.util.ImageIdGenerator;
 import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
-public class UUIDImageIdFactoryTest 
+public class UUIDImageIdGeneratorTest 
 {
 	private static ImageIdGenerator generator;
 	
