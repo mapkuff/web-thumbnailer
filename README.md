@@ -1,7 +1,7 @@
-# web-thumbnailator
+# Web-Thumbnailator
 - On the fly image processing such as image cropping or water mark adding by just change image request url. that's it.
-- This project is integrated with Spring and also storing data in DB using JPA is optional (for backup purpose).
-- Btw we internally use Thumbnailator for image processing. specially thanks to that project that make us easier to do image processing tasks.
+- This project is integrated with [Spring](https://github.com/spring-projects/spring-framework) and also storing data in DB using `JPA` is optional (for backup purpose).
+- Btw we internally use [Thumbnailator](https://github.com/coobird/thumbnailator) for image processing. specially thanks to that project that make us easier to do image processing tasks.
 - support Servlet and will support Netty soon.
 
 # Installation
