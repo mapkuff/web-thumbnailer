@@ -103,7 +103,13 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, UUIDImageIdGenerator.class.getName()));
 		
+		// Image ID Geneartor
+		builder = rootBeanDefinition(io.prime.web.thumbnailator.util.FileNameValidatorImpl.class);
+		def = builder.getRawBeanDefinition();
+		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		def.setSource(parserContext.extractSource(element));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, io.prime.web.thumbnailator.util.FileNameValidatorImpl.class.getName()));
+		
 		return null;
 	}
-
 }

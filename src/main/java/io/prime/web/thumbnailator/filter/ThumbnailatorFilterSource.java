@@ -1,4 +1,4 @@
-package io.prime.web.thumbnailator.bean;
+package io.prime.web.thumbnailator.filter;
 
 import java.util.List;
 import java.util.Map;

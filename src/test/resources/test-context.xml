@@ -65,7 +65,7 @@
 							database-enabled="true"
 						/>
 	
-	<bean class="io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource">
+	<bean class="io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource">
 		<property name="filters">
 			<map>
 				<entry key="default"><null /></entry>

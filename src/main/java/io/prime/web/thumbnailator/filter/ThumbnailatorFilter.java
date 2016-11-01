@@ -1,4 +1,4 @@
-package io.prime.web.thumbnailator.bean;
+package io.prime.web.thumbnailator.filter;
 
 import static net.coobird.thumbnailator.Thumbnails.Builder;
 

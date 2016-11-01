@@ -1,6 +1,5 @@
 package io.prime.web.thumbnailator.filter;
 
-import io.prime.web.thumbnailator.bean.ThumbnailatorFilter;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 import net.coobird.thumbnailator.geometry.Coordinate;
 

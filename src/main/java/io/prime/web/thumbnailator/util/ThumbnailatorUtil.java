@@ -20,10 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.prime.web.thumbnailator.bean.Metadata;
 import io.prime.web.thumbnailator.bean.MetadataSource;
-import io.prime.web.thumbnailator.bean.ThumbnailatorFilter;
-import io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource;
 import io.prime.web.thumbnailator.domain.Image;
 import io.prime.web.thumbnailator.exception.FilterNotFoundException;
+import io.prime.web.thumbnailator.filter.ThumbnailatorFilter;
+import io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
