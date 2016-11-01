@@ -19,6 +19,7 @@ import org.w3c.dom.Element;
 import io.prime.web.thumbnailator.bean.MetadataSourceImpl;
 import io.prime.web.thumbnailator.exception.ThumnailerConfigInitializeException;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepositoryImpl;
+import io.prime.web.thumbnailator.repository.UnsupportedThumbnailatorImageRepositoryImpl;
 import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
@@ -27,6 +28,7 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 	public static final String XML_ATTR_SOURCE_DIRECTORY = "source-image-directory";
 	public static final String XML_ATTR_FILTERED_DIRECTORY = "filtered-image-directory";
 	public static final String XML_ATTR_BASE_URL = "base-url";
+	public static final String XML_ATTR_DATABASE_ENABLED = "database-enabled";
 
 	public BeanDefinition parse(Element element, ParserContext parserContext) 
 	{
@@ -52,13 +54,23 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 			parserContext.registerBeanComponent(new BeanComponentDefinition(def, identifier));
 		}
 		
-		// Repository
-		BeanDefinitionBuilder builder = rootBeanDefinition(ThumbnailatorImageRepositoryImpl.class);
-		builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
+		// DB ENABLED
+		Boolean dbEnabled = new Boolean(element.getAttribute(XML_ATTR_DATABASE_ENABLED));
+		BeanDefinitionBuilder builder = rootBeanDefinition(Boolean.class);
+		builder.addConstructorArgValue(dbEnabled);
 		AbstractBeanDefinition def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		def.setSource(parserContext.extractSource(element));
-		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailatorImageRepositoryImpl.class.getName()));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, BeanDefinitionIdentifier.DATABASE_ENABLED));
+		
+		// Repository
+		Class<?> repositoryClass = dbEnabled.booleanValue() ? ThumbnailatorImageRepositoryImpl.class : UnsupportedThumbnailatorImageRepositoryImpl.class;
+		builder = rootBeanDefinition(repositoryClass);
+		builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
+		def = builder.getRawBeanDefinition();
+		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		def.setSource(parserContext.extractSource(element));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, repositoryClass.getName()));
 		
 		// Utils
 		builder = rootBeanDefinition(ThumbnailatorUtil.class);
@@ -69,21 +81,22 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, ThumbnailatorUtil.class.getName()));
 		
 		// Entity Register Post Processor
-		builder = rootBeanDefinition(EntityManagemntBeanPostProcessor.class);
-		def = builder.getRawBeanDefinition();
-		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-		def.setSource(parserContext.extractSource(element));
-		parserContext.registerBeanComponent(new BeanComponentDefinition(def, EntityManagemntBeanPostProcessor.class.getName()));
+		if (dbEnabled) {
+			builder = rootBeanDefinition(EntityManagemntBeanPostProcessor.class);
+			def = builder.getRawBeanDefinition();
+			def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			def.setSource(parserContext.extractSource(element));
+			parserContext.registerBeanComponent(new BeanComponentDefinition(def, EntityManagemntBeanPostProcessor.class.getName()));
+		}
 		
-		
-		// Entity Register Post Processor
+		// Metadata Source
 		builder = rootBeanDefinition(MetadataSourceImpl.class);
 		def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, MetadataSourceImpl.class.getName()));
 		
-		// Image ID Factory
+		// Image ID Geneartor
 		builder = rootBeanDefinition(UUIDImageIdGenerator.class);
 		def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);

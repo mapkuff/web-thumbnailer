@@ -19,7 +19,7 @@
 			<xsd:attribute name="source-image-directory" type="xsd:string"  use="required">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[
-   						Directory to store raw images.
+   						Directory to store source images.
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
@@ -37,6 +37,15 @@
 					]]></xsd:documentation>
 				</xsd:annotation>
 			</xsd:attribute>
+			
+			<xsd:attribute name="database-enabled" type="xsd:boolean" default="false">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+   						specify whether to backup image into Database or not. 
+					]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			
 		</xsd:complexType>
 	</xsd:element>
 
