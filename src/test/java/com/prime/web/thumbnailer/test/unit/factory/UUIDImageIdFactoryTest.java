@@ -3,12 +3,12 @@ package com.prime.web.thumbnailer.test.unit.factory;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
-import io.prime.web.thumbnailator.factory.ImageIdFactory;
-import io.prime.web.thumbnailator.factory.UUIDImageIdFactory;
+import io.prime.web.thumbnailator.util.ImageIdGenerator;
+import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
 public class UUIDImageIdFactoryTest 
 {
-	private ImageIdFactory factory = new UUIDImageIdFactory();
+	private ImageIdGenerator factory = new UUIDImageIdGenerator();
 	
 	@Test
 	public void test()

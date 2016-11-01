@@ -24,7 +24,6 @@ import io.prime.web.thumbnailator.bean.ThumbnailatorFilter;
 import io.prime.web.thumbnailator.bean.ThumbnailatorFilterSource;
 import io.prime.web.thumbnailator.domain.Image;
 import io.prime.web.thumbnailator.exception.FilterNotFoundException;
-import io.prime.web.thumbnailator.factory.ImageIdFactory;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
@@ -41,7 +40,7 @@ public class ThumbnailerUtil
 	private ThumbnailatorFilterSource filterSource;
 	
 	@Autowired
-	private ImageIdFactory imageIdFactory;
+	private ImageIdGenerator imageIdFactory;
 	
 	public String create(InputStream input, String fileName) throws IOException
 	{

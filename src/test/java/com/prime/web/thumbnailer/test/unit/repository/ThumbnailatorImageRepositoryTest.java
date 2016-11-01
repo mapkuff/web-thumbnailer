@@ -14,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.prime.web.thumbnailer.test.unit.AbstractSpringTest;
 
 import io.prime.web.thumbnailator.domain.Image;
-import io.prime.web.thumbnailator.factory.ImageIdFactory;
-import io.prime.web.thumbnailator.factory.UUIDImageIdFactory;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
+import io.prime.web.thumbnailator.util.ImageIdGenerator;
+import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ThumbnailatorImageRepositoryTest extends AbstractSpringTest
@@ -27,7 +27,7 @@ public class ThumbnailatorImageRepositoryTest extends AbstractSpringTest
 	@PersistenceContext
 	private EntityManager em;
 	
-	private ImageIdFactory factory = new UUIDImageIdFactory();
+	private ImageIdGenerator factory = new UUIDImageIdGenerator();
 	
 	private String imageId = factory.generate("sample_image_for_repository.jpg");
 	

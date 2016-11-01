@@ -18,9 +18,9 @@ import org.w3c.dom.Element;
 
 import io.prime.web.thumbnailator.bean.MetadataSourceImpl;
 import io.prime.web.thumbnailator.exception.ThumnailerConfigInitializeException;
-import io.prime.web.thumbnailator.factory.UUIDImageIdFactory;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepositoryImpl;
 import io.prime.web.thumbnailator.util.ThumbnailerUtil;
+import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
 public class WebThumbnailerParser  implements BeanDefinitionParser 
 {
@@ -84,11 +84,11 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, MetadataSourceImpl.class.getName()));
 		
 		// Image ID Factory
-		builder = rootBeanDefinition(UUIDImageIdFactory.class);
+		builder = rootBeanDefinition(UUIDImageIdGenerator.class);
 		def = builder.getRawBeanDefinition();
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		def.setSource(parserContext.extractSource(element));
-		parserContext.registerBeanComponent(new BeanComponentDefinition(def, UUIDImageIdFactory.class.getName()));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, UUIDImageIdGenerator.class.getName()));
 		
 		return null;
 	}
