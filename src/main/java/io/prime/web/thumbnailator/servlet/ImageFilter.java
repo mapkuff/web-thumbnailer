@@ -1,9 +1,6 @@
 package io.prime.web.thumbnailator.servlet;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import io.prime.web.thumbnailator.bean.MetadataSource;
@@ -29,7 +27,7 @@ public class ImageFilter implements Filter
 {
 	private static Logger logger = LoggerFactory.getLogger(ImageFilter.class);
 	
-	private ExecutorService executor;
+	private  ExecutorService executor;
 	
 	@Autowired
 	private MetadataSource metadataSource;
@@ -38,11 +36,21 @@ public class ImageFilter implements Filter
 	private ThumbnailatorUtil thumbnailerUtil;
 	
 	private Boolean isAsyncSupport = null;
+	
+	private int numberOfThreads;
 
 	public void init(FilterConfig filterConfig) throws ServletException 
 	{
 		SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(this,	filterConfig.getServletContext());
-		executor = Executors.newFixedThreadPool(4);
+		String numberOfThreadsString = filterConfig.getInitParameter("NUMBER_OF_THREADS");
+		if (StringUtils.isEmpty(numberOfThreadsString)) {
+			logger.warn("'NUMBER_OF_THREADS' not specified, use 1 thread to handle requests if async support enabled");
+			this.numberOfThreads = 1;
+		} else {
+			this.numberOfThreads = Integer.parseInt(numberOfThreadsString);
+			logger.info("using 'NUMBER_OF_THREADS' = " + this.numberOfThreads + " to handle image request");
+		}
+		executor = Executors.newFixedThreadPool(numberOfThreads);
 	}
 
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException 
@@ -54,7 +62,7 @@ public class ImageFilter implements Filter
 				final AsyncContext asyncContext = request.startAsync();
 				this.getExcecutor().submit(new ImageFilterAsyncHandler(asyncContext, this.metadataSource, thumbnailerUtil));
 			} else {
-				this.getExcecutor().submit(new ImageFilterHandler(metadataSource, thumbnailerUtil, request, response));
+				new ImageFilterHandler(metadataSource, thumbnailerUtil, request, response).run();
 			}
 		} else {
 			chain.doFilter(request, response);
@@ -64,15 +72,24 @@ public class ImageFilter implements Filter
 	private boolean isAsyncSupport(HttpServletRequest request)
 	{
 		if ( null == this.isAsyncSupport ) {
-			try {
-				HttpServletRequest.class.getMethod("isAsyncSupported");
-				this.isAsyncSupport = request.isAsyncSupported();
-				if (false == this.isAsyncSupport) {
-					logger.warn("Asynce support is not enabled, please turn if on to avoid leading to performance issue.");
+			synchronized (this) {
+				if ( null == this.isAsyncSupport ) {
+					try {
+						ServletRequest.class.getMethod("isAsyncSupported");
+						this.isAsyncSupport = request.isAsyncSupported();
+						if (false == this.isAsyncSupport) {
+							logger.warn("Asynce support is disabled or not configure in the configuration.");
+						}
+					} catch (NoSuchMethodException e) {
+						logger.warn("Async support is disabled due the servlet version is lower than 3.0.", e);
+						this.isAsyncSupport = false;
+					} finally {
+						if (false == this.isAsyncSupport.booleanValue()) {
+							logger.warn("Async support is disabled. shutting down executor service");
+							this.shutdownExecutor();
+						}
+					}
 				}
-			} catch (Exception e) {
-				logger.warn("Async support is not enabled due the servlet version is lower than 3.0, this may lead to a performance issue.", e);
-				this.isAsyncSupport = false;
 			}
 		}
 		return this.isAsyncSupport.booleanValue();
@@ -85,43 +102,19 @@ public class ImageFilter implements Filter
 
 	public void destroy() 
 	{
-		this.getExcecutor().shutdown();
+		logger.info("Shutting down executor service");
+		this.shutdownExecutor();
 	}
 	
-	public static void handleImageServing(HttpServletResponse response, File file) throws IOException
+	private void shutdownExecutor()
 	{
-		
-	}
-	
-	public static void handleException(HttpServletResponse response, Exception exception) throws IOException
-	{
-		logger.error("Error while handling web-thumbnailator: " + exception.getMessage(), exception);
-		StringWriter writer = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(writer);
-		exception.printStackTrace(printWriter);
-		String errorMessage = writer.toString();
-		errorMessage = errorMessage.replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
-		errorMessage = errorMessage.replace("\r\n", "<br />");
-		errorMessage = errorMessage.replace("\n", "<br />");
-		response.setStatus(500);
-		response
-			.getWriter()
-			.append("<html>")
-				.append("<head>")
-					.append("<title>Web Thumbnailator Error</title>")
-					.append("<style>")
-						.append("body {")
-							.append("padding: 20px;")
-						.append("}")
-					.append("</style>")
-				.append("</head>")
-				.append("<body>")
-					.append("<h1>Error while handling web-thumbnailator</h1>")
-					.append("<h2>" + exception.getMessage() + "</h2>")
-					.append("<hr />")
-					.append("<h4>" + errorMessage + "</h4>")
-				.append("</body>")
-			.append("</html>")
-			;
+		ExecutorService executorService = this.getExcecutor();
+		if (false == executorService.isShutdown()) {
+			synchronized (this) {
+				if (false == executorService.isShutdown()) {
+					executorService.shutdown();
+				}
+			}
+		}
 	}
 }
