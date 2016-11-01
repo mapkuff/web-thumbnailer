@@ -37,7 +37,11 @@
 			</bean>
 			
 		</beans>
-		
+	
+# Image Persisting		
+1. you can persist image using variety of overload method `io.prime.web.thumbnailator.util.ThumbnailatorUtil.create()` 
+2. Once you persisted your image, you will get imageId as a `String`. store it wherever you want.
+
 # Image Serving
 Assume that you have
 - `example.com` as your host name.
