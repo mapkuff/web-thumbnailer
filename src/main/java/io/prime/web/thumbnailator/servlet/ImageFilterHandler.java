@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.NestedRuntimeException;
 
-import io.prime.web.thumbnailator.bean.ImageInformation;
+import io.prime.web.thumbnailator.bean.ImageRequestInformation;
 import io.prime.web.thumbnailator.bean.MetadataSource;
 import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 
@@ -43,7 +43,7 @@ public class ImageFilterHandler implements Runnable
 	public void run() 
 	{
 		try {
-			ImageInformation imageInformation = ImageInformation.fromServletRequest(this.request, this.metadataSource);
+			ImageRequestInformation imageInformation = ImageRequestInformation.fromServletRequest(this.request, this.metadataSource);
 			File file = this.thumbnailerUtil.get(imageInformation.getImageId(), imageInformation.getFilterName());
 			String contentType = Files.probeContentType(file.toPath());
 			if (false == contentType.startsWith("image")) {

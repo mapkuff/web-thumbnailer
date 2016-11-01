@@ -6,13 +6,13 @@ import org.springframework.util.StringUtils;
 
 import io.prime.web.thumbnailator.exception.ImageInformationParsingException;
 
-public class ImageInformation 
+public class ImageRequestInformation 
 {
 	private String filterName;
 	
 	private String imageId;
 	
-	public ImageInformation(String filterName, String imageId) 
+	public ImageRequestInformation(String filterName, String imageId) 
 	{
 		this.filterName = filterName;
 		this.imageId = imageId;
@@ -26,7 +26,7 @@ public class ImageInformation
 		return imageId;
 	}
 	
-	public static ImageInformation fromServletRequest(HttpServletRequest request, MetadataSource metadataSource) throws ImageInformationParsingException
+	public static ImageRequestInformation fromServletRequest(HttpServletRequest request, MetadataSource metadataSource) throws ImageInformationParsingException
 	{
 		String imageUrl = request.getRequestURI().substring(metadataSource.getMetadata().getBaseUrl().length());
 		imageUrl = StringUtils.trimLeadingCharacter(imageUrl, '/');
@@ -47,6 +47,6 @@ public class ImageInformation
 			}
 		}
 		
-		return new ImageInformation(filterName, imageId);
+		return new ImageRequestInformation(filterName, imageId);
 	}
 }
