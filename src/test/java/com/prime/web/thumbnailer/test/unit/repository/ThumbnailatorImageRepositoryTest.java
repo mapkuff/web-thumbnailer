@@ -1,10 +1,13 @@
 package com.prime.web.thumbnailer.test.unit.repository;
 
+import java.lang.reflect.Field;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -15,10 +18,12 @@ import com.prime.web.thumbnailer.test.unit.AbstractSpringTest;
 
 import io.prime.web.thumbnailator.domain.Image;
 import io.prime.web.thumbnailator.repository.ThumbnailatorImageRepository;
+import io.prime.web.thumbnailator.util.FileNameValidatorImpl;
 import io.prime.web.thumbnailator.util.ImageIdGenerator;
 import io.prime.web.thumbnailator.util.UUIDImageIdGenerator;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@Transactional
 public class ThumbnailatorImageRepositoryTest extends AbstractSpringTest
 {
 	@Autowired
@@ -27,34 +32,42 @@ public class ThumbnailatorImageRepositoryTest extends AbstractSpringTest
 	@PersistenceContext
 	private EntityManager em;
 	
-	private ImageIdGenerator factory = new UUIDImageIdGenerator();
+	private static ImageIdGenerator generator;
 	
-	private String imageId = factory.generate("sample_image_for_repository.jpg");
+	private static String imageId;
+	
+	@BeforeClass
+	public static void init() throws Exception
+	{
+		generator = new UUIDImageIdGenerator();
+		Field field = UUIDImageIdGenerator.class.getDeclaredField("validator");
+		field.setAccessible(true);
+		field.set(generator, new FileNameValidatorImpl());
+		imageId = generator.generate("sample_image_for_repository.jpg");
+	}
 	
 	@Test
-	@Transactional
 	public void A_imagePeristingTest()
 	{
 		Image image = new Image();
-		image.setId(this.imageId);
+		image.setId(imageId);
 		image.setData(new byte[]{11,12,13});
 		this.repository.save(image);
 		this.em.flush();
 	}
 	
 	@Test
-	@Transactional
 	public void B_imageFechingTest()
 	{
-		Image image = this.repository.findOne(this.imageId);
+		this.A_imagePeristingTest();
+		Image image = this.repository.findOne(imageId);
 		Assert.assertNotNull(image);
 	}
 	
 	@Test(expected=NoResultException.class)
-	@Transactional
 	public void C_imageFechingErrorTest()
 	{
-		this.repository.findOne(this.imageId + ".bak");
+		this.repository.findOne(imageId + ".bak");
 	}
 	
 	
