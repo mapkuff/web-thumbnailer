@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 import javax.persistence.NoResultException;
+import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,37 +79,44 @@ public class ThumbnailerUtil
 			IOUtils.closeQuietly(fileOutputStream);
 			IOUtils.closeQuietly(input);
 		}
-		
 		return imageId;
 	}
 	
-	public String create(MultipartFile file) throws IOException 
+	public String create(MultipartFile multipartFile) throws IOException 
 	{
-		return this.create(file.getInputStream(), file.getOriginalFilename());
+		return this.create(multipartFile.getInputStream(), multipartFile.getOriginalFilename());
 	}
 	
+	public String create(Part part) throws IOException 
+	{
+		return this.create(part.getInputStream(), part.getName());
+	}
+	
+	public String create(byte[] data, String fileName) throws IOException 
+	{
+		return this.create(new ByteArrayInputStream(data), fileName);
+	}
 	
 	
 	/**
 	 * 
 	 * @param imageId
-	 * @param filterName
-	 * @return filtered image File
-	 * @throws IOException 
-	 * @throws FileNotFoundException
-	 * @throws NoResultException
+	 * @return
+	 * @throws IOException
+	 * @throws FileNotFoundException for unable to get source file
 	 */
-	public File get(String imageId, String filterName) throws IOException 
+	public File getSource(String imageId) throws IOException
 	{
 		Metadata metadata = this.metadataSource.getMetadata();
-		try {
-			imageId = imageId.replace('/', File.separatorChar);
-			File sourceFile = new File(metadata.getSourceDirectory().getPath() + File.separator + imageId );
-			if (false == sourceFile.exists()) {
-				if (false == metadata.isDatabaseEnabled()) {
-					throw new FileNotFoundException("Source image was not found: " + sourceFile.getPath());
-				}
-				// recover file from DB
+		imageId = imageId.replace('/', File.separatorChar);
+		File sourceFile = new File(metadata.getSourceDirectory().getPath() + File.separator + imageId );
+		
+		if (false == sourceFile.exists()) {
+			if (false == metadata.isDatabaseEnabled()) {
+				throw new FileNotFoundException("Source image was not found: " + sourceFile.getPath());
+			}
+			// recover file from DB
+			try {
 				Image image = this.repository.findOne(imageId.replace(File.separatorChar, '/'));
 				synchronized (image.getId().intern()) {
 					if (false == sourceFile.exists()) {
@@ -123,29 +131,49 @@ public class ThumbnailerUtil
 						}
 					}
 				}
+			} catch (NoResultException e) {
+				throw new FileNotFoundException("Source image was not found and unable to recover from DB: " + sourceFile.getPath());
 			}
-			
+		}
+		return sourceFile;
+	}
+	
+	
+	/**
+	 * 
+	 * @param imageId
+	 * @param filterName
+	 * @return filtered image File
+	 * @throws IOException 
+	 * @throws FileNotFoundException for unable to get source image from imageId
+	 * @throws FilterNotFoundException for specify filterName was not found in configuration
+	 * @throws SecurityException for permission denied while processing file
+	 */
+	public File get(String imageId, String filterName) throws IOException 
+	{
+		Metadata metadata = this.metadataSource.getMetadata();
+		try {
 			File filteredImage = new File(metadata.getFilteredDirectory().getPath() + File.separator + filterName + File.separator + imageId);
 			if (false == filteredImage.exists()) {
 				// generate filtered image
 				synchronized (imageId.intern()) {
 					if (false == filteredImage.exists()) {
+						File sourceFile = this.getSource(imageId);
+						Assert.isTrue(filteredImage.createNewFile()); //TODO message
 						Builder<File> builder = Thumbnails.of(sourceFile);
-						if (false == this.filterSource.getFilters().containsKey(filterName)) {
+						List<ThumbnailatorFilter> filters = this.filterSource.getFilters().get(filterName);
+						
+						if (CollectionUtils.isEmpty(filters)) {
 							throw new FilterNotFoundException(filterName);
 						}
-						List<ThumbnailatorFilter> filters = this.filterSource.getFilters().get(filterName);
-						if (false == CollectionUtils.isEmpty(filters)) {
-							for (ThumbnailatorFilter targetFilter : filters) {
-								targetFilter.filter(builder);
-							}
+						for (ThumbnailatorFilter targetFilter : filters) {
+							targetFilter.filter(builder);
 						}
-						builder.allowOverwrite(false)
-							.toFile(filteredImage);
+						
+						builder.allowOverwrite(false).toFile(filteredImage);
 					}
 				}
 			}
-			
 			return filteredImage;
 		} catch (IOException e) {
 			throw e;
