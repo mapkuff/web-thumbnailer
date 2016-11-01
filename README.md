@@ -38,17 +38,18 @@
 			
 		</beans>
 	
-# Image Persisting		
-1. you can persist image using variety of overload method `io.prime.web.thumbnailator.util.ThumbnailatorUtil.create()` 
-2. Once you persisted your image, you will get imageId as a `String`. store it wherever you want.
+# Usage >> Image Persisting		
+1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
+2. And then you can persist image using variety of overload methods of `ThumbnailatorUtil.create()` 
+3. Once you persisted your image, you will get imageId as a `String`. store it wherever you want.
 
-# Image Serving
+# Usage >> Image Serving
 Assume that you have
 - `example.com` as your host name.
 - `/sampleApp` as your contextPath.
 - `/images` as a Web-Thumbnailator baseUrl.
 - `crop_500x500` as your filter name to crop image to 500x500
-- `aaa/bbb/sample-image.jpg` as your imageId
+- `/aaa/bbb/sample-image.jpg` as your imageId
 
 then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/aaa/bbb/sample-image.jpg`
 
