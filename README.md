@@ -89,7 +89,7 @@ Once you autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil` then you c
 
 # Contributor
 Mr. Siwapun Siwaporn
+- job purpose email: siwapun.si@gmail.com
+- other purpose email: map.siwapun@gmail.com
+- (LinkedIn)[https://www.linkedin.com/in/siwapun-siwaporn-3b060594]
 
-job purpose email: siwapun.si@gmail.com
-
-other purpose email: map.siwapun@gmail.com
