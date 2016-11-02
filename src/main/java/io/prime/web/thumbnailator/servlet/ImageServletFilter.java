@@ -23,9 +23,9 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import io.prime.web.thumbnailator.bean.MetadataSource;
 import io.prime.web.thumbnailator.util.ThumbnailatorUtil;
 
-public class ImageFilter implements Filter
+public class ImageServletFilter implements Filter
 {
-	private static Logger logger = LoggerFactory.getLogger(ImageFilter.class);
+	private static Logger logger = LoggerFactory.getLogger(ImageServletFilter.class);
 	
 	private  ExecutorService executor;
 	
