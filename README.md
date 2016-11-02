@@ -8,6 +8,16 @@
 # !!! UNDER DEVELOPMENT !!!
 just some tweaks on servlet filter and their unit tests. xD
 
+# How our image processing work
+Assume that you have
+- `example.com` as your host name.
+- `/sampleApp` as your contextPath.
+- `/images` as a Web-Thumbnailator baseUrl.
+- `crop_500x500` as your filter name to crop image to 500x500
+- `/my/image/id/sample.jpg` as your imageId
+
+then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample.jpg`
+
 # Installation
 `checkout` this branch using git and then `mvn install` then add dependency
      
@@ -17,16 +27,6 @@ just some tweaks on servlet filter and their unit tests. xD
 			       <artifactId>web.thumbnailator</artifactId>
              </dependency>
          </dependencies>		
-
-# Usage -> Image Serving
-Assume that you have
-- `example.com` as your host name.
-- `/sampleApp` as your contextPath.
-- `/images` as a Web-Thumbnailator baseUrl.
-- `crop_500x500` as your filter name to crop image to 500x500
-- `/my/image/id/sample.jpg` as your imageId
-
-then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample.jpg`
 
 # Configuration -> Spring
 1. Define spring configuration including web-thumbnailer configuration tag and define bean of type `io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource`
