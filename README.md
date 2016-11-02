@@ -52,10 +52,10 @@
 //TODO
 
 # Provided Filters
-// TODO
+1. `io.prime.web.thumbnailator.filter.CropFilter` //TODO
 
 # Custom Filters
-// TODO
+You can create your own filter by implements interface `ThumbnailatorFilter` and then add your implementation into configuration.
 
 # Usage -> Image Persisting		
 1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
