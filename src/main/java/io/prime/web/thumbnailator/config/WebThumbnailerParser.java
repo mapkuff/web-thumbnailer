@@ -65,7 +65,8 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		// BASE URL
 		String baseUrl = element.getAttribute(XML_ATTR_BASE_URL);
 		baseUrl = StringUtils.trimTrailingCharacter(baseUrl, '/');
-		baseUrl = '/' + StringUtils.trimLeadingCharacter(baseUrl, '/');
+		baseUrl = StringUtils.trimLeadingCharacter(baseUrl, '/');
+		baseUrl = StringUtils.isEmpty(baseUrl) ? "" : '/' + baseUrl;
 		builder = rootBeanDefinition(String.class);
 		builder.addConstructorArgValue(baseUrl);
 		def = builder.getRawBeanDefinition();
