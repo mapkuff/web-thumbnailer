@@ -44,7 +44,7 @@
 			
 		</beans>
 
-`source-image-directory` and `filtered-image-directory` will be load via [Spring ResourceLoader](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html). see them for more information and learn how can you specify it.
+`source-image-directory` and `filtered-image-directory` will be loaded using [Spring ResourceLoader](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html). see them for more information and learn how can you specify it.
 	
 # Configuration -> Servlet
 //TODO
