@@ -5,7 +5,14 @@
 - support `Servlet` and will support [Netty](https://github.com/netty/netty) soon.
 
 # Installation
-- `checkout` this branch using git and then `mvn install`
+- `checkout` this branch using git and then `mvn install` then add dependency
+     
+     <dependencies>
+		<dependency>
+			<groupId>io.prime.th</groupId>
+			<artifactId>web.thumbnailator</artifactId>
+		</dependency>
+     </dependencies>		
 
 # Configuration -> Spring
 1. Define spring configuration including web-thumbnailer configuration tag and define bean of type `io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource`
@@ -41,6 +48,9 @@
 # Configuration -> Servlet
 //TODO
 
+# Configuration -> Netty
+//TODO
+
 # Usage -> Image Persisting		
 1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
 2. And then you can persist image using variety of overload methods of `ThumbnailatorUtil.create()` 
@@ -59,6 +69,7 @@ then the url to serve the image which will be cropped to 500 x 500 would be `htt
 # Roadmap
 - need to review and do some tweaks before releasing.
 - change to full async on processing request
+- provide full configuration on every part of this project.
 
 # Contributor
 Mr. Siwapun Siwaporn
