@@ -8,8 +8,9 @@
 # !!! UNDER DEVELOPMENT !!!
 just some tweaks on servlet filter and their unit tests. xD
 
-# How our image processing work
+# How Web-Thumbnailator work
 For example, you want to store image and serve cropped 500x500 image in your home page.
+
 1. Once you persist image, you will get `imageId`. store in somewhere. For example, in your Article table. 
 2. And then request image to this pattern [/contextPath][/WebThumbnailatorBaseUrl]/filterName/imageId
 
