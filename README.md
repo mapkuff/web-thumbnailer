@@ -51,7 +51,7 @@
 //TODO
 
 # Configuration -> Netty
-//TODO
+Not supported yet.
 
 # Filters Chain
 when you define filter in configuration, you must define in list which will be trigger in chain. for example, your first filter may crop image and then your 2nd one will rotate your image.
