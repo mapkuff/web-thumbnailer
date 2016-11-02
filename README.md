@@ -51,6 +51,9 @@
 # Configuration -> Netty
 //TODO
 
+# Filters Chain
+when you define filter in configuration, you must define in list which will be trigger in chain. for example, your first filter may crop image and then your 2nd one will rotate your image.
+
 # Provided Filters
 1. `io.prime.web.thumbnailator.filter.CropFilter` //TODO
 
