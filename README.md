@@ -51,6 +51,12 @@
 # Configuration -> Netty
 //TODO
 
+# Provided Filters
+// TODO
+
+# Custom Filters
+// TODO
+
 # Usage -> Image Persisting		
 1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
 2. And then you can persist image using variety of overload methods of `ThumbnailatorUtil.create()` 
