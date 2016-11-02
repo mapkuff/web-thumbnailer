@@ -6,6 +6,7 @@
 - support `Servlet` and will support [Netty](https://github.com/netty/netty) soon.
 
 # !!! UNDER DEVELOPMENT !!!
+just some tweaks on servlet filter and their unit tests. xD
 
 # Installation
 `checkout` this branch using git and then `mvn install` then add dependency
