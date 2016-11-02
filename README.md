@@ -17,7 +17,6 @@
 # Configuration -> Spring
 1. Define spring configuration including web-thumbnailer configuration tag and define bean of type `io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource`
 
-
      	<beans xmlns="http://www.springframework.org/schema/beans"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xmlns:thmb="http://www.prime.in.th/schema/web/thumbnailator"
@@ -44,6 +43,8 @@
 			</bean>
 			
 		</beans>
+
+`source-image-directory` and `filtered-image-directory` will be load via [Spring ResourceLoader](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html). see them for more information and learn how can you specify it.
 	
 # Configuration -> Servlet
 //TODO
@@ -71,12 +72,12 @@ Assume that you have
 - `/sampleApp` as your contextPath.
 - `/images` as a Web-Thumbnailator baseUrl.
 - `crop_500x500` as your filter name to crop image to 500x500
-- `/aaa/bbb/sample-image.jpg` as your imageId
+- `/my/image/id/sample.jpg` as your imageId
 
 then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/aaa/bbb/sample-image.jpg`
 
 # Usage -> Programmatic
-once you autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil` then you can use
+Once you autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil` then you can use
 - `ThumbnailatorUtil.create()` to persist image
 - `ThumbnailatorUtil.get()` to get filtered image
 - `ThumbnailatorUtil.getSource()` to get source image
