@@ -60,6 +60,7 @@ when you define filter in configuration, you must define in list which will be t
 
 # Custom Filters
 You can create your own filter by implements interface `ThumbnailatorFilter` and then add your implementation into configuration.
+For more information about how to define your own filter, please read more about [Thumbnailator](https://github.com/coobird/thumbnailator)
 
 # Usage -> Image Persisting		
 1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
