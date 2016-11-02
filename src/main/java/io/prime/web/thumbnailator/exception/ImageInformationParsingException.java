@@ -1,6 +1,6 @@
 package io.prime.web.thumbnailator.exception;
 
-public class ImageInformationParsingException extends Exception
+public class ImageInformationParsingException extends RuntimeException
 {
 
 	/**
@@ -11,6 +11,11 @@ public class ImageInformationParsingException extends Exception
 	public ImageInformationParsingException(String message)
 	{
 		super(message);
+	}
+	
+	public ImageInformationParsingException(String message, Throwable clause)
+	{
+		super(message, clause);
 	}
 
 }

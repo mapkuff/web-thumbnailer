@@ -61,7 +61,7 @@
 		
 	<thmb:web-thumbnailer 	source-image-directory="src/test/resources/assets/img-src" 
 							filtered-image-directory="src/test/resources/assets/img-filtered" 
-							base-url="/image" 
+							base-url="/images" 
 							database-enabled="true"
 						/>
 	

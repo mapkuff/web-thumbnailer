@@ -35,7 +35,6 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		Map<String, String> xmlAttributeToBeanIdentifierMap = new HashMap<String, String>();
 		xmlAttributeToBeanIdentifierMap.put(XML_ATTR_SOURCE_DIRECTORY, BeanDefinitionIdentifier.SOURCE_DIRECTORY);
 		xmlAttributeToBeanIdentifierMap.put(XML_ATTR_FILTERED_DIRECTORY, BeanDefinitionIdentifier.FILTERED_DIRECTORY);
-		xmlAttributeToBeanIdentifierMap.put(XML_ATTR_BASE_URL, BeanDefinitionIdentifier.BASE_URL);
 		
 		for (Entry<String, String> entry : xmlAttributeToBeanIdentifierMap.entrySet()) {
 			
@@ -62,6 +61,17 @@ public class WebThumbnailerParser  implements BeanDefinitionParser
 		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		def.setSource(parserContext.extractSource(element));
 		parserContext.registerBeanComponent(new BeanComponentDefinition(def, BeanDefinitionIdentifier.DATABASE_ENABLED));
+		
+		// BASE URL
+		String baseUrl = element.getAttribute(XML_ATTR_BASE_URL);
+		baseUrl = StringUtils.trimTrailingCharacter(baseUrl, '/');
+		baseUrl = '/' + StringUtils.trimLeadingCharacter(baseUrl, '/');
+		builder = rootBeanDefinition(String.class);
+		builder.addConstructorArgValue(baseUrl);
+		def = builder.getRawBeanDefinition();
+		def.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		def.setSource(parserContext.extractSource(element));
+		parserContext.registerBeanComponent(new BeanComponentDefinition(def, BeanDefinitionIdentifier.BASE_URL));
 		
 		// Repository
 		Class<?> repositoryClass = dbEnabled.booleanValue() ? ThumbnailatorImageRepositoryImpl.class : UnsupportedThumbnailatorImageRepositoryImpl.class;
