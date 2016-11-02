@@ -18,6 +18,16 @@ just some tweaks on servlet filter and their unit tests. xD
              </dependency>
          </dependencies>		
 
+# Usage -> Image Serving
+Assume that you have
+- `example.com` as your host name.
+- `/sampleApp` as your contextPath.
+- `/images` as a Web-Thumbnailator baseUrl.
+- `crop_500x500` as your filter name to crop image to 500x500
+- `/my/image/id/sample.jpg` as your imageId
+
+then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample.jpg`
+
 # Configuration -> Spring
 1. Define spring configuration including web-thumbnailer configuration tag and define bean of type `io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource`
 
@@ -70,16 +80,6 @@ For more information about how to define your own filter, please read more about
 1. Just autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil`
 2. And then you can persist image using variety of overload methods of `ThumbnailatorUtil.create()` 
 3. Once you persisted your image, you will get imageId as a `String`. store it wherever you want.
-
-# Usage -> Image Serving
-Assume that you have
-- `example.com` as your host name.
-- `/sampleApp` as your contextPath.
-- `/images` as a Web-Thumbnailator baseUrl.
-- `crop_500x500` as your filter name to crop image to 500x500
-- `/my/image/id/sample.jpg` as your imageId
-
-then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample.jpg`
 
 # Usage -> Programmatic
 Once you autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil` then you can use
