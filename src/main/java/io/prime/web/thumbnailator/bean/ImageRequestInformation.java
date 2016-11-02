@@ -30,32 +30,24 @@ public class ImageRequestInformation
 	public static ImageRequestInformation fromServletRequest(HttpServletRequest request, MetadataSource metadataSource) throws ImageInformationParsingException
 	{
 		try {
-			String requestURI = request.getRequestURI();
+			String requestUri = request.getRequestURI();
 			Metadata metadata = metadataSource.getMetadata();
-			String imageBaseUrl = request.getServletContext().getContextPath() + metadata.getBaseUrl();
-			Assert.isTrue(requestURI.startsWith(imageBaseUrl + '/'), String.format("URL must start with '%s' but '%s' given", imageBaseUrl + '/', requestURI));
+			String baseImageUri = request.getServletContext().getContextPath() + metadata.getBaseUrl();
 			
-			String imageUrl = request.getRequestURI().substring(imageBaseUrl.length());
-			imageUrl = StringUtils.trimLeadingCharacter(imageUrl, '/');
-			imageUrl = StringUtils.trimTrailingCharacter(imageUrl, '/');
-			Assert.isTrue(false == StringUtils.isEmpty(imageUrl), "No image information found in url: " + requestURI);
+			baseImageUri = StringUtils.trimLeadingCharacter(baseImageUri, '/');
+			baseImageUri = StringUtils.trimTrailingCharacter(baseImageUri, '/');
+			requestUri = StringUtils.trimLeadingCharacter(requestUri, '/');
+			requestUri = StringUtils.trimTrailingCharacter(requestUri, '/');
+			String[] baseImageUriTokens = baseImageUri.split("/");
+			String[] requestUriTokens = requestUri.split("/");
 			
-			String[] imageTokens = imageUrl.split("/");
+			Assert.isTrue(requestUriTokens.length - baseImageUriTokens.length >= 2, String.format("Invalid image URL. expected this pattern /%s/{filter}/{imageIdToken1}/{imageIdToken2}..., '/%s' given", baseImageUri, requestUri));
 			
-			Assert.isTrue(
-					imageTokens.length >= 2 && StringUtils.hasLength(imageTokens[0]) && StringUtils.hasLength(imageTokens[1]),
-					String.format(
-							"Not enough image information {filterName: %s, imageId: %s}", 
-							imageTokens[0],
-							imageTokens.length < 2 ? "" : imageTokens[1]
-						)
-				);
-			
-			String filterName = imageTokens[0];
-			int tokenLength = imageTokens.length;
+			String filterName = requestUriTokens[baseImageUriTokens.length];
+			int requestUriTokensLength = requestUriTokens.length;
 			String imageId = "";
-			for (int i=1 ; i<tokenLength; i++) {
-				imageId += "/" + imageTokens[i];
+			for (int i=baseImageUriTokens.length+1 ; i<requestUriTokensLength; i++) {
+				imageId += "/" + requestUriTokens[i];
 			}
 			
 			return new ImageRequestInformation(filterName, imageId);
