@@ -74,7 +74,7 @@ Assume that you have
 - `crop_500x500` as your filter name to crop image to 500x500
 - `/my/image/id/sample.jpg` as your imageId
 
-then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/aaa/bbb/sample-image.jpg`
+then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample.jpg`
 
 # Usage -> Programmatic
 Once you autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil` then you can use
