@@ -5,7 +5,7 @@
 - support `Servlet` and will support [Netty](https://github.com/netty/netty) soon.
 
 # Installation
-- `checkout` this branch using git and then `mvn install` then add dependency
+`checkout` this branch using git and then `mvn install` then add dependency
      
          <dependencies>
              <dependency>
