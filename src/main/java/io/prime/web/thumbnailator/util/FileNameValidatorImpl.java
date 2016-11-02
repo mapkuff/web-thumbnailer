@@ -5,6 +5,7 @@ import org.springframework.util.StringUtils;
 
 import io.prime.web.thumbnailator.util.exception.InvalidFileNameException;
 
+//TODO change the way to validate file name using whitelist characters
 public class FileNameValidatorImpl implements FileNameValidator
 {
 	private final String[] RESERVED_WORDS = new String[]{"/", "\\"};
