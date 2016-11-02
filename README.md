@@ -74,9 +74,9 @@ then the url to serve the image which will be cropped to 500 x 500 would be `htt
 
 # Usage -> Programmatic
 once you autowire `io.prime.web.thumbnailator.util.ThumbnailatorUtil` then you can use
-`ThumbnailatorUtil.create()` to persist image
-`ThumbnailatorUtil.get()` to get filtered image
-`ThumbnailatorUtil.getSource()` to get source image
+- `ThumbnailatorUtil.create()` to persist image
+- `ThumbnailatorUtil.get()` to get filtered image
+- `ThumbnailatorUtil.getSource()` to get source image
 
 # Roadmap
 - need to review and do some tweaks before releasing.
