@@ -7,12 +7,12 @@
 # Installation
 - `checkout` this branch using git and then `mvn install` then add dependency
      
-     <dependencies>
-		<dependency>
-			<groupId>io.prime.th</groupId>
-			<artifactId>web.thumbnailator</artifactId>
-		</dependency>
-     </dependencies>		
+         <dependencies>
+             <dependency>
+			       <groupId>io.prime.th</groupId>
+			       <artifactId>web.thumbnailator</artifactId>
+             </dependency>
+         </dependencies>		
 
 # Configuration -> Spring
 1. Define spring configuration including web-thumbnailer configuration tag and define bean of type `io.prime.web.thumbnailator.filter.ThumbnailatorFilterSource`
