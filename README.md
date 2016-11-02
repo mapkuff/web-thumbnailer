@@ -9,14 +9,18 @@
 just some tweaks on servlet filter and their unit tests. xD
 
 # How our image processing work
-Assume that you have
+For example, you want to store image and serve cropped 500x500 image in your home page.
+1. Once you persist image, you will get `imageId`. store in somewhere. For example, in your Article table. 
+2. And then request image to this pattern [/contextPath][/WebThumbnailatorBaseUrl]/filterName/imageId
+
+Let's assume that you have
 - `example.com` as your host name.
 - `/sampleApp` as your contextPath.
 - `/images` as a Web-Thumbnailator baseUrl.
 - `crop_500x500` as your filter name to crop image to 500x500
-- `/my/image/id/sample.jpg` as your imageId
+- `/my/image/id/sample-article.jpg` as your imageId
 
-then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample.jpg`
+then the url to serve the image which will be cropped to 500 x 500 would be `http://example.com/sampleApp/images/crop_500x500/my/image/id/sample-article.jpg`
 
 # Installation
 `checkout` this branch using git and then `mvn install` then add dependency
