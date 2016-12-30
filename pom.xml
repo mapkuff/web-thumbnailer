@@ -8,7 +8,6 @@
 	<packaging>pom</packaging>
 
 	<name>web-thumbnailator</name>
-	<url>http://maven.apache.org</url>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -16,6 +15,11 @@
 		<version>1.4.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+	
+	<modules>
+		<module>core</module>
+	</modules>
+	
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +30,8 @@
 		<commons-io.version>2.5</commons-io.version>
 		<assertj-core-java8.version>1.0.0m1</assertj-core-java8.version>
 		<junit.version>4.12</junit.version>
+		<rxjava.version>1.2.4</rxjava.version>
+		<rxjava2.version>2.0.3</rxjava2.version>
 	</properties>
 
 	<dependencies>
@@ -60,7 +66,13 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>${common-io.version}</version>
+			<version>${commons-io.version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>io.reactivex.rxjava2</groupId>
+		    <artifactId>rxjava</artifactId>
+		    <version>${rxjava2.version}</version>
 		</dependency>
 
 	</dependencies>
