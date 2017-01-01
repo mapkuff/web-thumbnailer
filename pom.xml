@@ -9,12 +9,12 @@
 
 	<name>web-thumbnailator</name>
 
-	<parent>
+	<!-- <parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>1.4.3.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+		<relativePath/> lookup parent from repository
+	</parent> -->
 	
 	<modules>
 		<module>core</module>
@@ -32,6 +32,8 @@
 		<junit.version>4.12</junit.version>
 		<rxjava.version>1.2.4</rxjava.version>
 		<rxjava2.version>2.0.3</rxjava2.version>
+		<commons-lang3.version>3.5</commons-lang3.version>
+		<logback.version>1.1.8</logback.version>
 	</properties>
 
 	<dependencies>
@@ -58,12 +60,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.coobird</groupId>
-			<artifactId>thumbnailator</artifactId>
-			<version>${thumbnailator.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
@@ -74,16 +70,22 @@
 		    <artifactId>rxjava</artifactId>
 		    <version>${rxjava2.version}</version>
 		</dependency>
-
+		
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		    <version>${commons-lang3.version}</version>
+		</dependency>
+		
 	</dependencies>
 	
 	
-	<build>
+	<!-- <build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
-	</build>
+	</build> -->
 </project>

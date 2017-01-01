@@ -1,4 +1,4 @@
-package io.prime.web.thumbnailator.util.exception;
+package io.prime.web.thumbnailator.exception;
 
 import java.util.Arrays;
 
