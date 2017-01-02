@@ -1,14 +1,13 @@
 package io.prime.web.thumbnailator.filter.provided;
 
+import org.apache.commons.lang3.BooleanUtils;
 import io.prime.web.thumbnailator.filter.ThumbnailatorFilter;
-import io.prime.web.thumbnailator.util.provided.Assert;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 import net.coobird.thumbnailator.geometry.Position;
 import net.coobird.thumbnailator.geometry.Positions;
 
 public class CropFilter implements ThumbnailatorFilter
 {
-
     private int width;
 
     private int height;
@@ -18,7 +17,9 @@ public class CropFilter implements ThumbnailatorFilter
     @Override
     public <T> void filter(final Builder<T> builder)
     {
-        Assert.isTrue((width > 0) || (height > 0));
+        if (BooleanUtils.isFalse((width > 0) || (height > 0))) {
+
+        }
         if ((width > 0) && (height > 0)) {
             builder.size(width, height);
         } else {

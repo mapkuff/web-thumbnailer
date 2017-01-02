@@ -9,23 +9,21 @@
 
 	<name>web-thumbnailator</name>
 
-	<!-- <parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.3.RELEASE</version>
-		<relativePath/> lookup parent from repository
-	</parent> -->
-	
+	<!-- <parent> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-parent</artifactId> 
+		<version>1.4.3.RELEASE</version> <relativePath/> lookup parent from repository 
+		</parent> -->
+
 	<modules>
 		<module>core</module>
 	</modules>
-	
-	
+
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<!-- LIBRARY VERSION -->
+		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 		<thumbnailator.version>0.4.8</thumbnailator.version>
 		<commons-io.version>2.5</commons-io.version>
 		<assertj-core-java8.version>1.0.0m1</assertj-core-java8.version>
@@ -37,21 +35,21 @@
 	</properties>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.assertj</groupId>
-		    <artifactId>assertj-core-java8</artifactId>
-		    <version>${assertj-core-java8.version}</version>
-		    <scope>test</scope>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core-java8</artifactId>
+			<version>${assertj-core-java8.version}</version>
+			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -64,28 +62,33 @@
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>io.reactivex.rxjava2</groupId>
-		    <artifactId>rxjava</artifactId>
-		    <version>${rxjava2.version}</version>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>${rxjava2.version}</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-lang3</artifactId>
-		    <version>${commons-lang3.version}</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
 		</dependency>
-		
+
 	</dependencies>
-	
-	
-	<!-- <build>
+
+
+	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
 			</plugin>
 		</plugins>
-	</build> -->
+	</build>
 </project>
