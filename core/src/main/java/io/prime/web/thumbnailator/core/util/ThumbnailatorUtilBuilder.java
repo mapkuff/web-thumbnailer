@@ -28,7 +28,7 @@ public class ThumbnailatorUtilBuilder
         return new ThumbnailatorUtilBuilder();
     }
 
-    public ThumbnailatorUtilBuilder sourceDirectory( final MetadataSource metadataSource )
+    public ThumbnailatorUtilBuilder metadataSource( final MetadataSource metadataSource )
     {
         this.metadataSource = metadataSource;
         return this;
