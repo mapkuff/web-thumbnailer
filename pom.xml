@@ -12,6 +12,7 @@
     <modules>
         <module>core</module>
         <module>servlet</module>
+        <module>spring-boot</module>
     </modules>
 
     <organization>
@@ -33,6 +34,7 @@
         <rxjava2.version>2.0.3</rxjava2.version>
         <commons-lang3.version>3.5</commons-lang3.version>
         <logback.version>1.1.8</logback.version>
+        <spring-boot.version>1.4.3.RELEASE</spring-boot.version>
     </properties>
 
     <dependencies>
@@ -86,8 +88,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
         </plugins>
