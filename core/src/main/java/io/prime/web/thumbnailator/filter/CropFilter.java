@@ -1,7 +1,7 @@
-package io.prime.web.thumbnailator.filter.provided;
+package io.prime.web.thumbnailator.filter;
 
 import org.apache.commons.lang3.BooleanUtils;
-import io.prime.web.thumbnailator.filter.ThumbnailatorFilter;
+
 import net.coobird.thumbnailator.Thumbnails.Builder;
 import net.coobird.thumbnailator.geometry.Position;
 import net.coobird.thumbnailator.geometry.Positions;

@@ -1,19 +1,18 @@
-package io.prime.web.thumbnailator.bean.internal;
+package io.prime.web.thumbnailator.bean;
 
 import java.io.File;
-import io.prime.web.thumbnailator.bean.internal.spec.ImageIdContainer;
 
-public class ImageFilterContext implements ImageIdContainer
+public class ImageFilterContext implements ImageIdContainer, SourceFileRecoveryContext
 {
-    private String filterName;
+    private final String filterName;
 
-    private String imageId;
+    private final String imageId;
 
     private File sourceFile;
 
     private File filteredFile;
 
-    public ImageFilterContext(final String filterName, final String imageId)
+    public ImageFilterContext( final String filterName, final String imageId )
     {
         this.filterName = filterName;
         this.imageId = imageId;
@@ -35,17 +34,18 @@ public class ImageFilterContext implements ImageIdContainer
         return filteredFile;
     }
 
-    public void setResult(final File result)
+    public void setResult( final File result )
     {
         filteredFile = result;
     }
 
+    @Override
     public File getSourceFile()
     {
         return sourceFile;
     }
 
-    public void setSourceFile(final File sourceFile)
+    public void setSourceFile( final File sourceFile )
     {
         this.sourceFile = sourceFile;
     }

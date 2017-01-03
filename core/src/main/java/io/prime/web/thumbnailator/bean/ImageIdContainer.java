@@ -1,4 +1,4 @@
-package io.prime.web.thumbnailator.bean.internal.spec;
+package io.prime.web.thumbnailator.bean;
 
 public interface ImageIdContainer
 {

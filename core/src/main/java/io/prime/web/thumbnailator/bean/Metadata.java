@@ -2,31 +2,26 @@ package io.prime.web.thumbnailator.bean;
 
 import java.io.File;
 
-public class Metadata 
+public class Metadata
 {
-	private String baseUrl;
-	
-	private File sourceDirectory;
-	
-	private File filteredDirectory;
-	
-	public Metadata(String baseUrl, File sourceDirectory, File filteredDirectory, boolean databaseEnabled) 
-	{
-		this.baseUrl = baseUrl;
-		this.sourceDirectory = sourceDirectory;
-		this.filteredDirectory = filteredDirectory;
-	}
+    private final File sourceDirectory;
 
-	public String getBaseUrl() {
-		return baseUrl;
-	}
+    private final File filteredDirectory;
 
-	public File getSourceDirectory() {
-		return sourceDirectory;
-	}
+    public Metadata( final File sourceDirectory, final File filteredDirectory, final boolean databaseEnabled )
+    {
+        this.sourceDirectory = sourceDirectory;
+        this.filteredDirectory = filteredDirectory;
+    }
 
-	public File getFilteredDirectory() {
-		return filteredDirectory;
-	}
+    public File getSourceDirectory()
+    {
+        return sourceDirectory;
+    }
+
+    public File getFilteredDirectory()
+    {
+        return filteredDirectory;
+    }
 
 }
