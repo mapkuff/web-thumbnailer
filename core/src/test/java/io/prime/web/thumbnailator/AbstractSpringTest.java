@@ -1,4 +1,4 @@
-package com.prime.web.thumbnailer;
+package io.prime.web.thumbnailator;
 //package com.prime.web.thumbnailer.test.unit;
 //
 //import org.junit.After;
