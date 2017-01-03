@@ -16,4 +16,6 @@ public interface ThumbnailatorUtil
 
     Single<ImageFilterContext> getFiltered( String imageId, String filterName );
 
+    Single<String> detectImageMimetype( String filename, InputStream input );
+
 }

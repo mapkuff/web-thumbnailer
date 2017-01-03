@@ -75,6 +75,6 @@ public class ThumbnailatorUtilBuilder
         Assert.notNull( metadataSource );
         Assert.notNull( sourceFileRecoveryStrategy );
 
-        return new DefaultThumbnailatorUtil( metadataSource, filterSource, imageIdGenerator, sourceFileRecoveryStrategy );
+        return new ThumbnailatorUtilImpl( metadataSource, filterSource, imageIdGenerator, sourceFileRecoveryStrategy );
     }
 }

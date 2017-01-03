@@ -4,9 +4,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.tika.metadata.HttpHeaders;
+import org.apache.tika.metadata.TikaMetadataKeys;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.xml.sax.helpers.DefaultHandler;
 
 import io.prime.web.thumbnailator.core.bean.ImageCreationContext;
 import io.prime.web.thumbnailator.core.bean.ImageFilterContext;
@@ -23,7 +31,7 @@ import io.reactivex.functions.Function;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 
-public class DefaultThumbnailatorUtil implements ThumbnailatorUtil
+public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
 {
     private final MetadataSource metadataSource;
 
@@ -33,7 +41,7 @@ public class DefaultThumbnailatorUtil implements ThumbnailatorUtil
 
     private final Consumer<SourceFileRecoveryContext> sourceFileRecoveryStrategy;
 
-    DefaultThumbnailatorUtil( final MetadataSource metadataSource,
+    ThumbnailatorUtilImpl( final MetadataSource metadataSource,
                               final FilterSource filterSource,
                               final ImageIdGenerator imageIdGenerator,
                               final Consumer<SourceFileRecoveryContext> sourceFileRecoveryStrategy )
@@ -60,7 +68,8 @@ public class DefaultThumbnailatorUtil implements ThumbnailatorUtil
     @Override
     public Single<File> getSource( final String imageId )
     {
-        return resolveSourceFile( () -> imageId ).doOnSuccess( InternalUtilValidator::fileMustExists );
+        return this.resolveSourceFile( () -> imageId )
+                   .doOnSuccess( InternalUtilValidator::fileMustExists );
     }
 
     @Override
@@ -71,7 +80,7 @@ public class DefaultThumbnailatorUtil implements ThumbnailatorUtil
                      .doOnSuccess( InternalUtilValidator::validate )
                      .doOnSuccess( this::resolveFilterFile )
                      .doOnSuccess( e -> InternalUtilValidator.fileMustExists( e.getFilteredFile() ) )
-                     .onErrorResumeNext( handleFilteredFileNotFound( context ) );
+                     .onErrorResumeNext( this.handleFilteredFileNotFound( context ) );
     }
 
     private void generateImageId( final ImageCreationContext imageCreationContext )
@@ -131,7 +140,7 @@ public class DefaultThumbnailatorUtil implements ThumbnailatorUtil
                 return Single.just( context )
                              .flatMap( this::resolveSourceFile )
                              .doOnSuccess( InternalUtilValidator::fileMustExists )
-                             .onErrorResumeNext( recoverSourceFile( context ) )
+                             .onErrorResumeNext( this.recoverSourceFile( context ) )
                              .doOnSuccess( e -> context.setSourceFile( e ) )
                              .map( e -> context )
                              .doOnSuccess( this::generateFilteredImageFromSource )
@@ -183,4 +192,21 @@ public class DefaultThumbnailatorUtil implements ThumbnailatorUtil
         imageFilterContext.setResult( new File( filePath ) );
     }
 
+    @Override
+    public Single<String> detectImageMimetype( final String filename, final InputStream input )
+    {
+        return Single.fromCallable( () ->
+            {
+                final AutoDetectParser parser = new AutoDetectParser();
+                parser.setParsers( new HashMap<MediaType, Parser>() );
+
+                final org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+                metadata.add( TikaMetadataKeys.RESOURCE_NAME_KEY, filename );
+
+                parser.parse( input, new DefaultHandler(), metadata, new ParseContext() );
+                IOUtils.closeQuietly( input );
+
+                return metadata.get( HttpHeaders.CONTENT_TYPE );
+            } );
+    }
 }
