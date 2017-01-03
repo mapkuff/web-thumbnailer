@@ -100,22 +100,14 @@ public class WebThumbnailatorServlet extends HttpServlet
     {
         return filterContext ->
             {
-                // TODO
                 final File filteredFile = filterContext.getFilteredFile();
                 final String mimeType = thumbnailatorUtil.detectImageMimetype( filteredFile.getName(), new FileInputStream( filteredFile ) )
-                                                     .blockingGet();
-
+                                                         .blockingGet();
                 response.setHeader( "Content-Type", mimeType );
                 response.flushBuffer();
                 final FileInputStream input = new FileInputStream( filterContext.getFilteredFile() );
                 IOUtils.copy( input, response.getOutputStream() );
             };
-    }
-
-    public String getMimeType( final File file )
-    {
-        // TODO
-        return null;
     }
 
     public Consumer<Throwable> serveErrorResponseResponse( final HttpServletResponse response )
