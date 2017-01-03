@@ -2,22 +2,18 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>web.thumbnailator.core</artifactId>
+	<artifactId>web-thumbnailator-core</artifactId>
+	<name>web-thumbnailator-core</name>
 	<packaging>jar</packaging>
+	
 	<parent>
-		<groupId>io.prime.th</groupId>
-		<artifactId>web.thumbnailator</artifactId>
+		<groupId>prime.thumbnailator.web</groupId>
+		<artifactId>web-thumbnailator</artifactId>
 		<version>0.0.1</version>
 	</parent>
 
-	<name>web-thumbnailator-core</name>
-	
-	<url>http://maven.apache.org</url>
-
-	<properties>
-	</properties>
-
 	<dependencies>
+    
 		<dependency>
 			<groupId>net.coobird</groupId>
 			<artifactId>thumbnailator</artifactId>
