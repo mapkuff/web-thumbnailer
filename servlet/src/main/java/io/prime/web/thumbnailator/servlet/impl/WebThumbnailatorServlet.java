@@ -1,4 +1,4 @@
-package io.prime.web.thumbnailator.servlet.base;
+package io.prime.web.thumbnailator.servlet.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
