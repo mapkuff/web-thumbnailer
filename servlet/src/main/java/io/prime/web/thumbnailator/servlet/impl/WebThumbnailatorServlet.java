@@ -36,13 +36,13 @@ public class WebThumbnailatorServlet extends HttpServlet
 
     public String fetchBaseUrl()
     {
-        // TODO
+        // TODO load from configuration
         return null;
     }
 
     public ThumbnailatorUtil fetchThumbnailatorUtil()
     {
-        // TODO
+        // TODO load from configuration
         return null;
     }
 
