@@ -15,9 +15,10 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.prime.web.thumbnailator.core.bean.ImageFilterContext;
-import io.prime.web.thumbnailator.core.util.Assert;
+import io.prime.web.thumbnailator.core.util.InternalAssert;
 import io.prime.web.thumbnailator.core.util.ThumbnailatorUtil;
+import io.prime.web.thumbnailator.servlet.bean.ImageFilterRequest;
+import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
@@ -66,70 +67,76 @@ public class WebThumbnailatorServlet extends HttpServlet
     @Override
     protected final void doGet( final HttpServletRequest req, final HttpServletResponse resp ) throws ServletException, IOException
     {
-        Single<HttpServletRequest> servlet = null;
+        HttpServletRequest targetRequest = null;
 
-        final AtomicReference<HttpServletResponse> targetResponse = new AtomicReference<>();
-        final AtomicReference<ImageFilterContext> targetFilterContext = new AtomicReference<>();
+        final AtomicReference<HttpServletResponse> targetResponse = new AtomicReference<HttpServletResponse>();
 
-        if ( asyncSupport )
-        {
+        Scheduler scheduler = null;
+
+        if ( asyncSupport ) {
             final AsyncContext asyncContext = req.startAsync();
             targetResponse.set( (HttpServletResponse) asyncContext.getResponse() );
-
-            servlet = Single.just( asyncContext.getRequest() )
-                            .cast( HttpServletRequest.class )
-                            .subscribeOn( Schedulers.io() );
+            targetRequest = (HttpServletRequest) asyncContext.getRequest();
+            scheduler = Schedulers.io();
         }
-        else
-        {
+
+        else {
             targetResponse.set( resp );
-            servlet = Single.just( req );
+            targetRequest = req;
+            scheduler = Schedulers.trampoline();
         }
 
-        servlet.doOnSuccess( this::validate )
-               .map( this::getImageFilterContext )
-               .doOnSuccess( targetFilterContext::set )
-               .flatMap( e -> thumbnailatorUtil.getFiltered( e.getImageId(), e.getFilterName() ) )
-               .doOnSuccess( targetFilterContext::set )
-               .doOnSuccess( this.serveSuccessfulResponse( targetResponse.get() ) )
-               .doOnError( this.serveErrorResponseResponse( targetResponse.get() ) )
-               .subscribe();
+        Single.just( targetRequest )
+              .doOnSuccess( this::validate )
+              .map( this::toImageFilterContext )
+              .doOnSuccess( e -> this.serveSuccessfulResponse( e.getImageId(), e.getFilterName(), targetResponse.get() ) )
+              .doOnError( this.serveErrorResponseResponse( targetResponse.get() ) )
+              .subscribeOn( scheduler )
+              .subscribe();
     }
 
-    public Consumer<ImageFilterContext> serveSuccessfulResponse( final HttpServletResponse response )
+    public Consumer<File> serveSuccessfulResponse( final String imageId, final String filterName, final HttpServletResponse response )
     {
-        return filterContext ->
-            {
-                final File filteredFile = filterContext.getFilteredFile();
-                final String mimeType = thumbnailatorUtil.detectImageMimetype( filteredFile.getName(), new FileInputStream( filteredFile ) )
-                                                         .blockingGet();
-                response.setHeader( "Content-Type", mimeType );
-                response.flushBuffer();
-                final FileInputStream input = new FileInputStream( filterContext.getFilteredFile() );
-                IOUtils.copy( input, response.getOutputStream() );
-            };
+        return file ->
+        {
+            final File targetFile = thumbnailatorUtil.getFiltered( imageId, filterName )
+                                                     .blockingGet();
+
+            final String mimeType = thumbnailatorUtil.detectImageMimetype( this.getFileNameFromImageId( imageId ), new FileInputStream( targetFile ) )
+                                                     .blockingGet();
+
+            response.setHeader( "Content-Type", mimeType );
+            response.flushBuffer();
+            final FileInputStream input = new FileInputStream( targetFile );
+            IOUtils.copy( input, response.getOutputStream() );
+        };
+    }
+
+    public String getFileNameFromImageId( final String imageId )
+    {
+        return imageId.substring( imageId.lastIndexOf( '/' ) + 1 );
     }
 
     public Consumer<Throwable> serveErrorResponseResponse( final HttpServletResponse response )
     {
         return err ->
-            {
-                logger.error( err.getMessage(), err );
-                response.sendError( 400, err.getMessage() );
-            };
+        {
+            logger.error( err.getMessage(), err );
+            response.sendError( 400, err.getMessage() );
+        };
     }
 
     public void validate( final HttpServletRequest req )
     {
-        Assert.isTrue( req.getRequestURI()
-                          .contains( baseUrl ) );
+        InternalAssert.isTrue( req.getRequestURI()
+                                  .contains( baseUrl ) );
     }
 
-    public ImageFilterContext getImageFilterContext( final HttpServletRequest req )
+    public ImageFilterRequest toImageFilterContext( final HttpServletRequest req )
     {
         final String filterName = null; // TODO
         final String imageId = null; // TODO
-        return new ImageFilterContext( filterName, imageId );
+        return new ImageFilterRequest( imageId, filterName );
     }
 
 }

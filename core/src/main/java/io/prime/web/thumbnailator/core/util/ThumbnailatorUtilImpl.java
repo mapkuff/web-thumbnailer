@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.mime.MediaType;
@@ -16,17 +16,14 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.xml.sax.helpers.DefaultHandler;
 
-import io.prime.web.thumbnailator.core.bean.ImageCreationContext;
-import io.prime.web.thumbnailator.core.bean.ImageFilterContext;
-import io.prime.web.thumbnailator.core.bean.ImageIdContainer;
 import io.prime.web.thumbnailator.core.bean.Metadata;
-import io.prime.web.thumbnailator.core.bean.SourceFileRecoveryContext;
-import io.prime.web.thumbnailator.core.exception.ThumbnailatorFileNotFoundException;
+import io.prime.web.thumbnailator.core.exception.NestedException;
 import io.prime.web.thumbnailator.core.sources.FilterSource;
 import io.prime.web.thumbnailator.core.sources.MetadataSource;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.functions.Consumer;
+import io.reactivex.SingleTransformer;
 import io.reactivex.functions.Function;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
@@ -39,137 +36,133 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
 
     private final ImageIdGenerator imageIdGenerator;
 
-    private final Consumer<SourceFileRecoveryContext> sourceFileRecoveryStrategy;
+    private final SingleTransformer<String, InputStream> sourceFileRecoveryTransformer;
 
     ThumbnailatorUtilImpl( final MetadataSource metadataSource,
-                              final FilterSource filterSource,
-                              final ImageIdGenerator imageIdGenerator,
-                              final Consumer<SourceFileRecoveryContext> sourceFileRecoveryStrategy )
+                           final FilterSource filterSource,
+                           final ImageIdGenerator imageIdGenerator,
+                           final SingleTransformer<String, InputStream> sourceFileRecovery )
     {
         this.metadataSource = metadataSource;
         this.filterSource = filterSource;
         this.imageIdGenerator = imageIdGenerator;
-        this.sourceFileRecoveryStrategy = sourceFileRecoveryStrategy;
+        sourceFileRecoveryTransformer = sourceFileRecovery;
 
     }
 
     @Override
-    public Single<ImageCreationContext> create( final InputStream inputStream, final String fileName )
+    public Single<String> create( final InputStream inputStream, final String fileName )
     {
-        final ImageCreationContext context = new ImageCreationContext( fileName, inputStream );
-        return Single.just( context )
-                     .doOnSuccess( InternalUtilValidator::validate )
-                     .doOnSuccess( this::generateImageId )
-                     .doOnSuccess( this::createFileFromImageId )
-                     .doOnSuccess( e -> InternalUtilValidator.fileMustExists( e.getSourceFile() ) )
-                     .doOnSuccess( this::writeDataToFile );
+        return Single.just( fileName )
+                     .filter( StringUtils::isNotBlank )
+                     .switchIfEmpty( Maybe.error( new IllegalArgumentException( "File name is empty." ) ) )
+                     .toSingle()
+                     .map( imageIdGenerator::generate )
+                     .doOnSuccess( imageId -> Single.just( imageId )
+                                                    .map( this::resolveSourceFile )
+                                                    .doOnSuccess( InternalUtilValidator::fileMustNotExists )
+                                                    .doOnSuccess( e -> this.writeDataToFile( e, inputStream ) )
+                                                    .toCompletable()
+                                                    .blockingAwait() );
     }
 
     @Override
     public Single<File> getSource( final String imageId )
     {
-        return this.resolveSourceFile( () -> imageId )
-                   .doOnSuccess( InternalUtilValidator::fileMustExists );
+        return Single.just( imageId )
+                     .map( this::resolveSourceFile )
+                     .doOnSuccess( InternalUtilValidator::fileMustExists );
     }
 
     @Override
-    public Single<ImageFilterContext> getFiltered( final String imageId, final String filterName )
+    public Single<File> getFiltered( final String imageId, final String filterName )
     {
-        final ImageFilterContext context = new ImageFilterContext( filterName, imageId );
-        return Single.just( context )
-                     .doOnSuccess( InternalUtilValidator::validate )
-                     .doOnSuccess( this::resolveFilterFile )
-                     .doOnSuccess( e -> InternalUtilValidator.fileMustExists( e.getFilteredFile() ) )
-                     .onErrorResumeNext( this.handleFilteredFileNotFound( context ) );
+        return Single.fromCallable( () -> this.resolveFilterFile( imageId, filterName ) )
+                     .onErrorResumeNext( NestedException::fromError )
+                     .doOnSuccess( InternalUtilValidator::fileMustExists )
+                     .onErrorResumeNext( this.handleFilteredFileNotFound( imageId, filterName ) );
     }
 
-    private void generateImageId( final ImageCreationContext imageCreationContext )
+    @Override
+    public Single<String> detectImageMimetype( final String filename, final InputStream input )
     {
-        final String filename = imageCreationContext.getFileName();
-        final String imageId = imageIdGenerator.generate( filename );
-        imageCreationContext.setImageId( imageId );
-    }
-
-    private void createFileFromImageId( final ImageCreationContext imageCreationContext ) throws IOException
-    {
-        final Metadata metadata = metadataSource.getMetadata();
-        final File sourceDirectory = metadata.getSourceDirectory();
-        final String imageId = imageIdGenerator.generate( imageCreationContext.getFileName() );
-        final String ImagePath = sourceDirectory.getPath() + File.separator + ( imageId.replaceAll( "/", File.separator ) );
-        final File imageSourceFile = new File( ImagePath );
-        // make sure file doesn't exists
-        Assert.isTrue( BooleanUtils.isFalse( imageSourceFile.exists() ), "Target file already exists: " + imageSourceFile.getPath() );
-        imageSourceFile.createNewFile();
-    }
-
-    private void writeDataToFile( final ImageCreationContext imageCreationContext ) throws IOException
-    {
-        final File imageFile = imageCreationContext.getSourceFile();
-        final FileOutputStream fileOutputStream = new FileOutputStream( imageFile );
-        final InputStream imageData = imageCreationContext.getInputStream();
-        try
+        return Single.fromCallable( () ->
         {
-            IOUtils.copy( imageData, fileOutputStream );
+            final AutoDetectParser parser = new AutoDetectParser();
+            parser.setParsers( new HashMap<MediaType, Parser>() );
+
+            final org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+            metadata.add( TikaMetadataKeys.RESOURCE_NAME_KEY, filename );
+
+            parser.parse( input, new DefaultHandler(), metadata, new ParseContext() );
+            IOUtils.closeQuietly( input );
+
+            return metadata.get( HttpHeaders.CONTENT_TYPE );
+        } );
+    }
+
+    private void writeDataToFile( final File file, final InputStream data ) throws IOException
+    {
+        final FileOutputStream fileOutputStream = new FileOutputStream( file );
+        try {
+            IOUtils.copy( data, fileOutputStream );
         }
-        finally
-        {
-            IOUtils.closeQuietly( imageData );
+        finally {
+            IOUtils.closeQuietly( data );
             IOUtils.closeQuietly( fileOutputStream );
         }
     }
 
-    private Single<File> resolveSourceFile( final ImageIdContainer imageIdContainer )
+    private File resolveSourceFile( final String imageId )
     {
-        final String imageId = imageIdContainer.getImageId();
         final Metadata metadata = metadataSource.getMetadata();
         final File sourceDirectory = metadata.getSourceDirectory();
         final String osBasedImageId = imageId.replace( '/', File.separatorChar );
-        final File result = new File( sourceDirectory.getPath() + File.separator + osBasedImageId );
-        return Single.just( result );
+        return new File( sourceDirectory.getPath() + File.separator + osBasedImageId );
     }
 
-    private Function<Throwable, Single<ImageFilterContext>> handleFilteredFileNotFound( final ImageFilterContext context )
+    private Function<Throwable, Single<File>> handleFilteredFileNotFound( final String imageId, final String filterName )
     {
         return err ->
-            {
-                if ( BooleanUtils.isFalse( err instanceof ThumbnailatorFileNotFoundException ) )
-                {
-                    return Single.error( err );
-                }
+        {
+            if ( err instanceof NestedException ) {
+                return Single.error( err );
+            }
 
-                return Single.just( context )
-                             .flatMap( this::resolveSourceFile )
-                             .doOnSuccess( InternalUtilValidator::fileMustExists )
-                             .onErrorResumeNext( this.recoverSourceFile( context ) )
-                             .doOnSuccess( e -> context.setSourceFile( e ) )
-                             .map( e -> context )
-                             .doOnSuccess( this::generateFilteredImageFromSource )
-                             .doOnSuccess( e -> InternalUtilValidator.fileMustExists( e.getFilteredFile() ) );
-            };
+            return Single.just( imageId )
+                         .map( this::resolveSourceFile )
+                         .onErrorResumeNext( NestedException::fromError )
+                         .doOnSuccess( InternalUtilValidator::fileMustExists )
+                         .onErrorResumeNext( this.recoverSourceFile( imageId ) )
+                         .doOnSuccess( InternalUtilValidator::fileMustExists )
+                         .doOnSuccess( sourceFile -> this.generateFilteredImageFromSource( filterName, sourceFile, this.resolveFilterFile( imageId, filterName ) ) );
+
+        };
     }
 
-    private Function<Throwable, Single<File>> recoverSourceFile( final ImageFilterContext context )
+    private Function<Throwable, Single<File>> recoverSourceFile( final String imageId )
     {
         return err ->
-            {
-                if ( BooleanUtils.isFalse( err instanceof ThumbnailatorFileNotFoundException ) )
-                {
-                    return Single.error( err );
-                }
-                return Single.just( context )
-                             .cast( SourceFileRecoveryContext.class )
-                             .doOnSuccess( sourceFileRecoveryStrategy )
-                             .map( SourceFileRecoveryContext::getSourceFile )
-                             .doOnSuccess( InternalUtilValidator::fileMustExists );
-            };
+        {
+            if ( err instanceof NestedException ) {
+                return Single.error( err );
+            }
+
+            return Single.just( imageId )
+                         .map( this::resolveSourceFile )
+                         .doOnSuccess( sourceFile ->
+                         {
+                             Single.just( imageId )
+                                   .compose( sourceFileRecoveryTransformer )
+                                   .doOnSuccess( inputStream -> this.writeDataToFile( sourceFile, inputStream ) )
+                                   .toCompletable()
+                                   .blockingAwait();
+                         } );
+        };
     }
 
-    private void generateFilteredImageFromSource( final ImageFilterContext context )
+    private void generateFilteredImageFromSource( final String filterName, final File sourceFile, final File filteredFile )
     {
-        final String filterName = context.getFilterName();
-        final File sourceFile = context.getSourceFile();
-        final File filteredFile = context.getFilteredFile();
-
         final Builder<File> builder = Thumbnails.of( sourceFile );
         Observable.fromIterable( filterSource.getFilters( filterName ) )
                   .switchIfEmpty( Observable.error( new IllegalArgumentException( "Filters was not found: " + filterName ) ) )
@@ -178,35 +171,19 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
                   .subscribe();
     }
 
-    private void resolveFilterFile( final ImageFilterContext imageFilterContext )
+    private File resolveFilterFile( final String imageId, final String filterName )
     {
         final Metadata metadata = metadataSource.getMetadata();
         final String path = metadata.getFilteredDirectory()
                                     .getPath();
+
         final String filePath = new StringBuilder().append( path )
                                                    .append( File.separatorChar )
-                                                   .append( imageFilterContext.getFilterName() )
+                                                   .append( filterName )
                                                    .append( File.separatorChar )
-                                                   .append( imageFilterContext.getImageId() )
+                                                   .append( imageId )
                                                    .toString();
-        imageFilterContext.setResult( new File( filePath ) );
+        return new File( filePath );
     }
 
-    @Override
-    public Single<String> detectImageMimetype( final String filename, final InputStream input )
-    {
-        return Single.fromCallable( () ->
-            {
-                final AutoDetectParser parser = new AutoDetectParser();
-                parser.setParsers( new HashMap<MediaType, Parser>() );
-
-                final org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
-                metadata.add( TikaMetadataKeys.RESOURCE_NAME_KEY, filename );
-
-                parser.parse( input, new DefaultHandler(), metadata, new ParseContext() );
-                IOUtils.closeQuietly( input );
-
-                return metadata.get( HttpHeaders.CONTENT_TYPE );
-            } );
-    }
 }

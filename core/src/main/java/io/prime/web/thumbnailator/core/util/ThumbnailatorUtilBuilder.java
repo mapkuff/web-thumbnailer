@@ -1,12 +1,11 @@
 package io.prime.web.thumbnailator.core.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.InputStream;
 
-import io.prime.web.thumbnailator.core.bean.SourceFileRecoveryContext;
 import io.prime.web.thumbnailator.core.sources.FilterSource;
 import io.prime.web.thumbnailator.core.sources.MetadataSource;
-import io.reactivex.functions.Consumer;
+import io.reactivex.Single;
+import io.reactivex.SingleTransformer;
 
 public class ThumbnailatorUtilBuilder
 {
@@ -16,7 +15,7 @@ public class ThumbnailatorUtilBuilder
 
     private ImageIdGenerator imageIdGenerator;
 
-    private Consumer<SourceFileRecoveryContext> sourceFileRecoveryStrategy;
+    private SingleTransformer<String, InputStream> sourceFileRecoveryStrategy;
 
     private ThumbnailatorUtilBuilder()
     {
@@ -46,7 +45,7 @@ public class ThumbnailatorUtilBuilder
         return this;
     }
 
-    public ThumbnailatorUtilBuilder sourceFileRecoveryStrategy( final Consumer<SourceFileRecoveryContext> sourceFileRecoveryStrategy )
+    public ThumbnailatorUtilBuilder sourceFileRecoveryStrategy( final SingleTransformer<String, InputStream> sourceFileRecoveryStrategy )
     {
         this.sourceFileRecoveryStrategy = sourceFileRecoveryStrategy;
         return this;
@@ -54,26 +53,21 @@ public class ThumbnailatorUtilBuilder
 
     public ThumbnailatorUtil build()
     {
-        if ( null == sourceFileRecoveryStrategy )
-        {
-            final Logger logger = LoggerFactory.getLogger( this.getClass() );
-            sourceFileRecoveryStrategy = context ->
-                {
-                    logger.error( "Source file is missing and was not recovered: [imageId: {}, file: {}]",
-                                  context.getImageId(),
-                                  context.getSourceFile() );
-                };
+        if ( null == sourceFileRecoveryStrategy ) {
+            sourceFileRecoveryStrategy = imageId ->
+            {
+                return Single. <InputStream> error( new IllegalArgumentException( "Source file is missing but not sourceFileRecoveryStrategy was configured: imageId=" + imageId ) );
+            };
         }
-        if ( null == imageIdGenerator )
-        {
+        if ( null == imageIdGenerator ) {
             imageIdGenerator = new UUIDImageIdGenerator();
         }
 
         // VALIDATION
-        Assert.notNull( filterSource );
-        Assert.notNull( imageIdGenerator );
-        Assert.notNull( metadataSource );
-        Assert.notNull( sourceFileRecoveryStrategy );
+        InternalAssert.notNull( filterSource );
+        InternalAssert.notNull( imageIdGenerator );
+        InternalAssert.notNull( metadataSource );
+        InternalAssert.notNull( sourceFileRecoveryStrategy );
 
         return new ThumbnailatorUtilImpl( metadataSource, filterSource, imageIdGenerator, sourceFileRecoveryStrategy );
     }

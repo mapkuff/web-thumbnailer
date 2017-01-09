@@ -2,4 +2,9 @@ language: java
 jdk:
   - oraclejdk8
 sudo: false
-script: mvn clean test
+addons:
+  sonarqube:
+    token:
+      secure: 2fc1028d9e4b994f847a2c8a901d9223153ffded
+script:
+  - mvn clean install sonar:sonar

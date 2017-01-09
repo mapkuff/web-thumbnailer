@@ -23,7 +23,7 @@ import java.util.function.Supplier;
  * Port some functionality of runtime assertion from springframeowrk.
  *
  */
-public abstract class Assert
+public abstract class InternalAssert
 {
 
     /**
