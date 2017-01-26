@@ -23,8 +23,8 @@ then the url to serve the image which will be cropped to 500 x 500 would be `htt
 # Installation
 //TODO
 
-# Spring Boot
-[Go to spring-boot module](spring-boot)
+# Spring
+[Go to spring-boot module](spring)
 	
 # Servlet
 [Go to servlet module](servlet)
