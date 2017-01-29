@@ -4,27 +4,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.metadata.HttpHeaders;
-import org.apache.tika.metadata.TikaMetadataKeys;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.xml.sax.helpers.DefaultHandler;
 
 import io.prime.web.thumbnailator.core.bean.Metadata;
-import io.prime.web.thumbnailator.core.exception.NestedException;
 import io.prime.web.thumbnailator.core.sources.FilterSource;
 import io.prime.web.thumbnailator.core.sources.MetadataSource;
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.SingleTransformer;
-import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.SingleSubject;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.Thumbnails.Builder;
 
@@ -36,34 +29,35 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
 
     private final ImageIdGenerator imageIdGenerator;
 
-    private final SingleTransformer<String, InputStream> sourceFileRecoveryTransformer;
-
-    ThumbnailatorUtilImpl( final MetadataSource metadataSource,
-                           final FilterSource filterSource,
-                           final ImageIdGenerator imageIdGenerator,
-                           final SingleTransformer<String, InputStream> sourceFileRecovery )
+    ThumbnailatorUtilImpl( final MetadataSource metadataSource, final FilterSource filterSource, final ImageIdGenerator imageIdGenerator )
     {
         this.metadataSource = metadataSource;
         this.filterSource = filterSource;
         this.imageIdGenerator = imageIdGenerator;
-        sourceFileRecoveryTransformer = sourceFileRecovery;
-
     }
 
     @Override
     public Single<String> create( final InputStream inputStream, final String fileName )
     {
-        return Single.just( fileName )
-                     .filter( StringUtils::isNotBlank )
-                     .switchIfEmpty( Maybe.error( new IllegalArgumentException( "File name is empty." ) ) )
-                     .toSingle()
-                     .map( imageIdGenerator::generate )
-                     .doOnSuccess( imageId -> Single.just( imageId )
-                                                    .map( this::resolveSourceFile )
-                                                    .doOnSuccess( InternalUtilValidator::fileMustNotExists )
-                                                    .doOnSuccess( e -> this.writeDataToFile( e, inputStream ) )
-                                                    .toCompletable()
-                                                    .blockingAwait() );
+        final SingleSubject<String> subject = SingleSubject.create();
+
+        final Completable task = Single.just( fileName )
+                                       .filter( StringUtils::isNotBlank )
+                                       .switchIfEmpty( Maybe.error( new IllegalArgumentException( "File name is empty." ) ) )
+                                       .toSingle()
+                                       .map( imageIdGenerator::generate )
+                                       .doOnSuccess( imageId -> Single.just( imageId )
+                                                                      .map( this::resolveSourceFile )
+                                                                      .doOnSuccess( this::fileMustNotExists )
+                                                                      .observeOn( Schedulers.io() )
+                                                                      .doOnSuccess( e -> this.writeDataToFile( e, inputStream ) )
+                                                                      .doOnSuccess( e -> subject.onSuccess( imageId ) )
+                                                                      .doOnError( subject::onError )
+                                                                      .subscribe() )
+                                       .doOnError( subject::onError )
+                                       .toCompletable();
+
+        return subject.doOnSubscribe( d -> task.subscribe() );
     }
 
     @Override
@@ -71,37 +65,36 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
     {
         return Single.just( imageId )
                      .map( this::resolveSourceFile )
-                     .doOnSuccess( InternalUtilValidator::fileMustExists );
+                     .doOnSuccess( this::fileMustExists );
     }
 
     @Override
     public Single<File> getFiltered( final String imageId, final String filterName )
     {
-        return Single.fromCallable( () -> this.resolveFilterFile( imageId, filterName ) )
-                     .onErrorResumeNext( NestedException::fromError )
-                     .doOnSuccess( InternalUtilValidator::fileMustExists )
-                     .onErrorResumeNext( this.handleFilteredFileNotFound( imageId, filterName ) );
+        final SingleSubject<File> subject = SingleSubject.create();
+
+        final Completable task = Single.fromCallable( () -> this.resolveFilterFile( imageId, filterName ) )
+                                       .doOnSuccess( filteredFile ->
+                                       {
+                                           if ( filteredFile.exists() ) {
+                                               subject.onSuccess( filteredFile );
+                                               return;
+                                           }
+
+                                           Single.just( imageId )
+                                                 .map( this::resolveSourceFile )
+                                                 .doOnSuccess( this::fileMustExists )
+                                                 .doOnSuccess( sourceFile -> this.generateFilteredImageFromSource( filterName, sourceFile, filteredFile )
+                                                                                 .doOnError( subject::onError )
+                                                                                 .doOnComplete( () -> subject.onSuccess( filteredFile ) ) )
+                                                 .subscribe();
+                                       } )
+                                       .toCompletable();
+
+        return subject.doOnSubscribe( d -> task.subscribe() );
     }
 
-    @Override
-    public Single<String> detectImageMimetype( final String filename, final InputStream input )
-    {
-        return Single.fromCallable( () ->
-        {
-            final AutoDetectParser parser = new AutoDetectParser();
-            parser.setParsers( new HashMap<MediaType, Parser>() );
-
-            final org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
-            metadata.add( TikaMetadataKeys.RESOURCE_NAME_KEY, filename );
-
-            parser.parse( input, new DefaultHandler(), metadata, new ParseContext() );
-            IOUtils.closeQuietly( input );
-
-            return metadata.get( HttpHeaders.CONTENT_TYPE );
-        } );
-    }
-
-    private void writeDataToFile( final File file, final InputStream data ) throws IOException
+    public void writeDataToFile( final File file, final InputStream data ) throws IOException
     {
         final FileOutputStream fileOutputStream = new FileOutputStream( file );
         try {
@@ -113,7 +106,7 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
         }
     }
 
-    private File resolveSourceFile( final String imageId )
+    public File resolveSourceFile( final String imageId )
     {
         final Metadata metadata = metadataSource.getMetadata();
         final File sourceDirectory = metadata.getSourceDirectory();
@@ -121,57 +114,7 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
         return new File( sourceDirectory.getPath() + File.separator + osBasedImageId );
     }
 
-    private Function<Throwable, Single<File>> handleFilteredFileNotFound( final String imageId, final String filterName )
-    {
-        return err ->
-        {
-            if ( err instanceof NestedException ) {
-                return Single.error( err );
-            }
-
-            return Single.just( imageId )
-                         .map( this::resolveSourceFile )
-                         .onErrorResumeNext( NestedException::fromError )
-                         .doOnSuccess( InternalUtilValidator::fileMustExists )
-                         .onErrorResumeNext( this.recoverSourceFile( imageId ) )
-                         .doOnSuccess( InternalUtilValidator::fileMustExists )
-                         .doOnSuccess( sourceFile -> this.generateFilteredImageFromSource( filterName, sourceFile, this.resolveFilterFile( imageId, filterName ) ) );
-
-        };
-    }
-
-    private Function<Throwable, Single<File>> recoverSourceFile( final String imageId )
-    {
-        return err ->
-        {
-            if ( err instanceof NestedException ) {
-                return Single.error( err );
-            }
-
-            return Single.just( imageId )
-                         .map( this::resolveSourceFile )
-                         .doOnSuccess( sourceFile ->
-                         {
-                             Single.just( imageId )
-                                   .compose( sourceFileRecoveryTransformer )
-                                   .doOnSuccess( inputStream -> this.writeDataToFile( sourceFile, inputStream ) )
-                                   .toCompletable()
-                                   .blockingAwait();
-                         } );
-        };
-    }
-
-    private void generateFilteredImageFromSource( final String filterName, final File sourceFile, final File filteredFile )
-    {
-        final Builder<File> builder = Thumbnails.of( sourceFile );
-        Observable.fromIterable( filterSource.getFilters( filterName ) )
-                  .switchIfEmpty( Observable.error( new IllegalArgumentException( "Filters was not found: " + filterName ) ) )
-                  .doOnNext( e -> e.filter( builder ) )
-                  .doOnComplete( () -> builder.toFile( filteredFile ) )
-                  .subscribe();
-    }
-
-    private File resolveFilterFile( final String imageId, final String filterName )
+    public File resolveFilterFile( final String imageId, final String filterName )
     {
         final Metadata metadata = metadataSource.getMetadata();
         final String path = metadata.getFilteredDirectory()
@@ -185,5 +128,46 @@ public class ThumbnailatorUtilImpl implements ThumbnailatorUtil
                                                    .toString();
         return new File( filePath );
     }
+
+    public Completable generateFilteredImageFromSource( final String filterName, final File sourceFile, final File filteredFile )
+    {
+        final Builder<File> builder = Thumbnails.of( sourceFile );
+        return Completable.fromObservable( Observable.fromIterable( filterSource.getFilters( filterName ) )
+                                                     .switchIfEmpty( Observable.error( new IllegalArgumentException( "Filters was not found: " + filterName ) ) )
+                                                     .doOnNext( e -> e.filter( builder ) )
+                                                     .observeOn( Schedulers.io() )
+                                                     .doOnComplete( () -> builder.toFile( filteredFile ) ) );
+    }
+
+    public void fileMustExists( final File file )
+    {
+        InternalAssert.isTrue( file.exists(), String.format( "File MUST exists: %s", file ) );
+    }
+
+    public void fileMustNotExists( final File file )
+    {
+        InternalAssert.isTrue( BooleanUtils.isFalse( file.exists() ), String.format( "File must NOT exists: %s", file ) );
+    }
+
+    // TODO remove
+    // private Single<String> detectImageMimetype( final String filename, final
+    // InputStream input )
+    // {
+    // return Single.fromCallable( () ->
+    // {
+    // final AutoDetectParser parser = new AutoDetectParser();
+    // parser.setParsers( new HashMap<MediaType, Parser>() );
+    //
+    // final org.apache.tika.metadata.Metadata metadata = new
+    // org.apache.tika.metadata.Metadata();
+    // metadata.add( TikaMetadataKeys.RESOURCE_NAME_KEY, filename );
+    //
+    // parser.parse( input, new DefaultHandler(), metadata, new ParseContext()
+    // );
+    // IOUtils.closeQuietly( input );
+    //
+    // return metadata.get( HttpHeaders.CONTENT_TYPE );
+    // } );
+    // }
 
 }

@@ -44,9 +44,8 @@ public abstract class InternalAssert
      */
     public static void isTrue( final boolean expression, final Supplier<String> messageSupplier )
     {
-        if ( !expression )
-        {
-            throw new IllegalArgumentException( nullSafeGet( messageSupplier ) );
+        if ( !expression ) {
+            throw new IllegalArgumentException( InternalAssert.nullSafeGet( messageSupplier ) );
         }
     }
 
@@ -67,8 +66,7 @@ public abstract class InternalAssert
      */
     public static void isTrue( final boolean expression, final String message )
     {
-        if ( !expression )
-        {
+        if ( !expression ) {
             throw new IllegalArgumentException( message );
         }
     }
@@ -88,7 +86,7 @@ public abstract class InternalAssert
      */
     public static void isTrue( final boolean expression )
     {
-        isTrue( expression, "[Assertion failed] - this expression must be true" );
+        InternalAssert.isTrue( expression, "[Assertion failed] - this expression must be true" );
     }
 
     /**
@@ -108,9 +106,8 @@ public abstract class InternalAssert
      */
     public static void isNull( final Object object, final Supplier<String> messageSupplier )
     {
-        if ( object != null )
-        {
-            throw new IllegalArgumentException( nullSafeGet( messageSupplier ) );
+        if ( object != null ) {
+            throw new IllegalArgumentException( InternalAssert.nullSafeGet( messageSupplier ) );
         }
     }
 
@@ -130,8 +127,7 @@ public abstract class InternalAssert
      */
     public static void isNull( final Object object, final String message )
     {
-        if ( object != null )
-        {
+        if ( object != null ) {
             throw new IllegalArgumentException( message );
         }
     }
@@ -150,7 +146,7 @@ public abstract class InternalAssert
      */
     public static void isNull( final Object object )
     {
-        isNull( object, "[Assertion failed] - the object argument must be null" );
+        InternalAssert.isNull( object, "[Assertion failed] - the object argument must be null" );
     }
 
     /**
@@ -170,9 +166,8 @@ public abstract class InternalAssert
      */
     public static void notNull( final Object object, final Supplier<String> messageSupplier )
     {
-        if ( object == null )
-        {
-            throw new IllegalArgumentException( nullSafeGet( messageSupplier ) );
+        if ( object == null ) {
+            throw new IllegalArgumentException( InternalAssert.nullSafeGet( messageSupplier ) );
         }
     }
 
@@ -192,8 +187,7 @@ public abstract class InternalAssert
      */
     public static void notNull( final Object object, final String message )
     {
-        if ( object == null )
-        {
+        if ( object == null ) {
             throw new IllegalArgumentException( message );
         }
     }
@@ -212,7 +206,7 @@ public abstract class InternalAssert
      */
     public static void notNull( final Object object )
     {
-        notNull( object, "[Assertion failed] - this argument is required; it must not be null" );
+        InternalAssert.notNull( object, "[Assertion failed] - this argument is required; it must not be null" );
     }
 
     /**
@@ -236,9 +230,8 @@ public abstract class InternalAssert
      */
     public static void state( final boolean expression, final Supplier<String> messageSupplier )
     {
-        if ( !expression )
-        {
-            throw new IllegalStateException( nullSafeGet( messageSupplier ) );
+        if ( !expression ) {
+            throw new IllegalStateException( InternalAssert.nullSafeGet( messageSupplier ) );
         }
     }
 
@@ -262,8 +255,7 @@ public abstract class InternalAssert
      */
     public static void state( final boolean expression, final String message )
     {
-        if ( !expression )
-        {
+        if ( !expression ) {
             throw new IllegalStateException( message );
         }
     }
@@ -286,7 +278,7 @@ public abstract class InternalAssert
      */
     public static void state( final boolean expression )
     {
-        state( expression, "[Assertion failed] - this state invariant must be true" );
+        InternalAssert.state( expression, "[Assertion failed] - this state invariant must be true" );
     }
 
     private static String nullSafeGet( final Supplier<String> messageSupplier )
