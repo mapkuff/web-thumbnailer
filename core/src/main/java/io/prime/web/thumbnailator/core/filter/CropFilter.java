@@ -15,26 +15,28 @@ public class CropFilter implements ThumbnailatorFilter
     private Position position;
 
     @Override
-    public <T> void filter(final Builder<T> builder)
+    public <T> void filter( final Builder<T> builder )
     {
-        if (BooleanUtils.isFalse((width > 0) || (height > 0))) {
+        if ( BooleanUtils.isFalse( ( width > 0 ) || ( height > 0 ) ) ) {
 
         }
-        if ((width > 0) && (height > 0)) {
-            builder.size(width, height);
-        } else {
-            if (width > 0) {
-                builder.width(width);
-            } else {
-                builder.height(height);
+        if ( ( width > 0 ) && ( height > 0 ) ) {
+            builder.size( width, height );
+        }
+        else {
+            if ( width > 0 ) {
+                builder.width( width );
+            }
+            else {
+                builder.height( height );
             }
         }
 
-        if (null == position) {
+        if ( null == position ) {
             position = Positions.CENTER;
         }
 
-        builder.crop(position);
+        builder.crop( position );
     }
 
     public int getWidth()
@@ -42,7 +44,7 @@ public class CropFilter implements ThumbnailatorFilter
         return width;
     }
 
-    public void setWidth(final int width)
+    public void setWidth( final int width )
     {
         this.width = width;
     }
@@ -52,9 +54,19 @@ public class CropFilter implements ThumbnailatorFilter
         return height;
     }
 
-    public void setHeight(final int height)
+    public void setHeight( final int height )
     {
         this.height = height;
+    }
+
+    public Position getPosition()
+    {
+        return position;
+    }
+
+    public void setPosition( final Position position )
+    {
+        this.position = position;
     }
 
 }
