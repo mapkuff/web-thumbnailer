@@ -1,5 +1,7 @@
 package io.prime.web.thumbnailator.core.util;
 
+import io.prime.web.thumbnailator.core.generator.ImageIdGenerator;
+import io.prime.web.thumbnailator.core.generator.ImageIdGeneratorWithUUID;
 import io.prime.web.thumbnailator.core.sources.FilterSource;
 import io.prime.web.thumbnailator.core.sources.MetadataSource;
 
@@ -42,7 +44,7 @@ public class ThumbnailatorUtilBuilder
     public ThumbnailatorUtil build()
     {
         if ( null == imageIdGenerator ) {
-            imageIdGenerator = new UUIDImageIdGenerator();
+            imageIdGenerator = new ImageIdGeneratorWithUUID();
         }
 
         // VALIDATION

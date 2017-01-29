@@ -10,6 +10,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import io.prime.web.thumbnailator.core.bean.Metadata;
+import io.prime.web.thumbnailator.core.generator.ImageIdGenerator;
 import io.prime.web.thumbnailator.core.sources.FilterSource;
 import io.prime.web.thumbnailator.core.sources.MetadataSource;
 import io.reactivex.Completable;

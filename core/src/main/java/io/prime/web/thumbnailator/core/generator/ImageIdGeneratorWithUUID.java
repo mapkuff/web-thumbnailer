@@ -1,8 +1,8 @@
-package io.prime.web.thumbnailator.core.util;
+package io.prime.web.thumbnailator.core.generator;
 
 import java.util.UUID;
 
-public class UUIDImageIdGenerator implements ImageIdGenerator
+public class ImageIdGeneratorWithUUID implements ImageIdGenerator
 {
 
     @Override

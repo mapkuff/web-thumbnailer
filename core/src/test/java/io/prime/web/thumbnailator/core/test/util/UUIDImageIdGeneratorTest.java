@@ -8,12 +8,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.prime.web.thumbnailator.core.util.ImageIdGenerator;
-import io.prime.web.thumbnailator.core.util.UUIDImageIdGenerator;
+import io.prime.web.thumbnailator.core.generator.ImageIdGenerator;
+import io.prime.web.thumbnailator.core.generator.ImageIdGeneratorWithUUID;
 
 public class UUIDImageIdGeneratorTest
 {
-    private final ImageIdGenerator generator = new UUIDImageIdGenerator();
+    private final ImageIdGenerator generator = new ImageIdGeneratorWithUUID();
 
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 

@@ -1,4 +1,4 @@
-package io.prime.web.thumbnailator.core.util;
+package io.prime.web.thumbnailator.core.generator;
 
 public interface ImageIdGenerator 
 {
